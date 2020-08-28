@@ -17,6 +17,7 @@ app.get("/", (req, res) => {
 });
 
 require("./app/routes/customer.routes.js")(app);
+require("./app/routes/shop.routes.js")(app);
 
 dbConnection = require("./app/models/db");
 

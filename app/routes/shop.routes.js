@@ -10,7 +10,7 @@ module.exports = app => {
     app.get(basePath, shops.findAll);
     //
     // // Retrieve a single Customer with customerId
-    // app.get(basePath + "/:customerId", customers.findOne);
+    app.get(basePath + "/:shopId", shops.findOne);
     //
     // // Update a Customer with customerId
     app.put(basePath + "/:shopId", shops.update);

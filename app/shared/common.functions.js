@@ -1,3 +1,5 @@
+const dynamicResponse = require("../shared/dynamic.response");
+
 exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) {
     let query = " ";
     let value = [];
@@ -13,4 +15,14 @@ exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) 
         query: query,
         values: value
     };
+};
+
+exports.isValidObject = function (entity, requiredFields, res) {
+    let isValid = true;
+    Object.keys(entity).forEach(function (key) {
+        if ((entity[key] == undefined || entity[key] == null) && requiredFields.includes(key)) {
+            isValid = false;
+        }
+    });
+    return isValid;
 };

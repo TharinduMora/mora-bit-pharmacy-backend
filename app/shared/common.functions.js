@@ -1,4 +1,5 @@
 const dynamicResponse = require("../shared/dynamic.response");
+const payloadChecker = require('payload-validator');
 
 exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) {
     let query = " ";
@@ -17,12 +18,15 @@ exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) 
     };
 };
 
-exports.isValidObject = function (entity, requiredFields, res) {
-    let isValid = true;
-    Object.keys(entity).forEach(function (key) {
-        if ((entity[key] == undefined || entity[key] == null) && requiredFields.includes(key)) {
-            isValid = false;
-        }
-    });
-    return isValid;
+exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
+    if (!reqBody) {
+        res.status(400).send(dynamicResponse.error({message: "Content can not be empty!"}));
+        return false;
+    }
+    const requestPayloadChecker = payloadChecker.validator(reqBody, api, mandatoryColumns, blankValues);
+    if (!requestPayloadChecker.success) {
+        res.status(400).send(dynamicResponse.error({message: requestPayloadChecker.response.errorMessage}));
+        return false;
+    }
+    return true;
 };

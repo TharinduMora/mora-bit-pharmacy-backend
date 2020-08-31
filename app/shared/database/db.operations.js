@@ -1,5 +1,5 @@
-const poolConnection = require("../database/db.pool");
-const commonFunctions = require("../shared/common.functions");
+const poolConnection = require("./db.pool");
+const commonFunctions = require("../common.functions");
 
 exports.create = (entityName, entityObject, result) => {
     poolConnection.query(`INSERT INTO ${entityName} SET ?`, entityObject, (err, res) => {
@@ -11,23 +11,6 @@ exports.create = (entityName, entityObject, result) => {
 
         console.log("created : " + entityName, {id: res.insertId, ...entityObject});
         result(null, {id: res.insertId, ...entityObject});
-    });
-}
-
-exports.findOne = (entityName, primaryKey, primaryId, result) => {
-    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = ${primaryId}`;
-    poolConnection.query(sqlQuery, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-            return;
-        }
-        if (res.length) {
-            console.log("found customer: ", res[0]);
-            result(null, res[0]);
-            return;
-        }
-        result({kind: "not_found"}, null);
     });
 };
 
@@ -46,10 +29,27 @@ exports.updateEntity = (updatingObject, entityName, condition, primaryId, update
                 result({kind: "not_found"}, null);
                 return;
             }
-            console.log("updated " + entityName + ": ", {id: primaryId});
+            console.log("updated " + entityName + " Id: ", primaryId);
             result(null, {id: primaryId});
         }
     );
+};
+
+exports.findOne = (entityName, primaryKey, primaryId, result) => {
+    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = ${primaryId}`;
+    poolConnection.query(sqlQuery, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+            return;
+        }
+        if (res.length) {
+            console.log("found customer: ", res[0]);
+            result(null, res[0]);
+            return;
+        }
+        result({kind: "not_found"}, null);
+    });
 };
 
 exports.search = (SELECT_SQL, COUNT_SQL, result) => {
@@ -70,4 +70,4 @@ exports.search = (SELECT_SQL, COUNT_SQL, result) => {
             });
         }
     });
-}
+};

@@ -5,8 +5,7 @@ module.exports = {
         PASSWORD: "password",
         DB: "mok"
     },
-    STATUS: {
-        RESPONSE_SUCCESS: 1,
-        RESPONSE_ERROR: -1
+    SERVER: {
+        PORT: 3000
     }
 };

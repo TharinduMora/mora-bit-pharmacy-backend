@@ -1,4 +1,4 @@
-const poolConnection = require("../database/db.pool");
+const poolConnection = require("../shared/database/db.pool");
 
 // constructor
 const Customer = function(customer) {

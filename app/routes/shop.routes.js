@@ -1,10 +1,17 @@
-module.exports = app => {
+const shops = require("../controllers/shop.controller");
+const express = require('express');
+const router = express.Router();
 
-    const basePath = "/shop";
-    const shops = require("../controllers/shop.controller");
+router.use(function (req, res, next) {
+    console.log('Time:', Date.now())
+    // res.send("Error");
+    next()
+})
 
-    app.post(basePath, shops.create);
-    app.put(basePath, shops.update);
-    app.get(basePath, shops.findAll);
-    app.get(basePath + "/:shopId", shops.findOne);
-};
+router.get('/', shops.findAll);
+router.get('/:shopId', shops.findOne);
+router.post('/', shops.create);
+router.put('/', shops.update);
+
+//export this router to use in our index.js
+module.exports = router;

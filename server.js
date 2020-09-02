@@ -15,8 +15,10 @@ app.get("/", (req, res) => {
     res.json({message: "Welcome to smart pharmacy application."});
 });
 
-require("./app/routes/customer.routes.js")(app);
-require("./app/routes/shop.routes.js")(app);
+app.use("/shop",require("./app/routes/shop.routes.js"));
+
+// require("./app/routes/customer.routes.js")(app);
+// require("./app/routes/shop.routes.js")(app);
 
 const PORT = appConfig.SERVER.PORT;
 app.listen(PORT, () => {

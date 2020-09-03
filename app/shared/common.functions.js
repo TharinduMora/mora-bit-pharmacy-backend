@@ -31,9 +31,14 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
     return true;
 };
 
-exports.authValidator = function (req, res, functionId, next) {
-    if(req.admin.functions.includes(functionId))
-        console.log("true");
-    else console.log("false");
-    next();
-};
+exports.authValidator = (funcId) => {
+    return (req, res, next) => {
+        req.admin = {
+            functions: [1, 2]
+        };
+        if (req.admin.functions.includes(funcId))
+            console.log("true");
+        else console.log("false");
+        next();
+    }
+}

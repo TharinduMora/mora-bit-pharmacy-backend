@@ -31,18 +31,17 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
     return true;
 };
 
-exports.authValidator = (funcId) => {
+exports.authValidator = (functionId) => {
     return (req, res, next) => {
         req.admin = {
             functions: [1, 2]
         };
-        if (req.admin.functions.includes(funcId)){
+        if (req.admin.functions.includes(functionId)) {
             console.log("true");
             next();
-        }
-        else {
+        } else {
             console.log("false");
-            res.status(401).send();
+            res.status(401).send({unauthorized: true});
         }
     }
 }

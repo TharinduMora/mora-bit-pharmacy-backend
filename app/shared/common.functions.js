@@ -36,9 +36,13 @@ exports.authValidator = (funcId) => {
         req.admin = {
             functions: [1, 2]
         };
-        if (req.admin.functions.includes(funcId))
+        if (req.admin.functions.includes(funcId)){
             console.log("true");
-        else console.log("false");
-        next();
+            next();
+        }
+        else {
+            console.log("false");
+            res.status(401).send();
+        }
     }
 }

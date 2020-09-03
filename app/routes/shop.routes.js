@@ -12,4 +12,6 @@ router.post('/', commonFunctions.authValidator(appFunctions.CREATE_SHOP.ID), sho
 
 router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_SHOP.ID), shops.update);
 
+router.post('/findByCriteria', shops.findByCriteria);
+
 module.exports = router;

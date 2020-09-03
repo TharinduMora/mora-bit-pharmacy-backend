@@ -20,12 +20,12 @@ exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) 
 
 exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
     if (!reqBody) {
-        res.status(400).send(dynamicResponse.error({message: "Content can not be empty!"}));
+        res.status(400).send(dynamicResponse.error({ message: "Content can not be empty!" }));
         return false;
     }
     const requestPayloadChecker = payloadChecker.validator(reqBody, api, mandatoryColumns, blankValues);
     if (!requestPayloadChecker.success) {
-        res.status(400).send(dynamicResponse.error({message: requestPayloadChecker.response.errorMessage}));
+        res.status(400).send(dynamicResponse.error({ message: requestPayloadChecker.response.errorMessage }));
         return false;
     }
     return true;
@@ -41,27 +41,27 @@ exports.authValidator = (functionId) => {
             next();
         } else {
             console.log("false");
-            res.status(401).send({unauthorized: true});
+            res.status(401).send({ unauthorized: true });
         }
     }
 
-//     // My function
-//     const myfunction = async function(x, y) {
-//         return [
-//             x,
-//             y,
-//         ];
-//     }
-//
-// // Start function
-//     const start = async function(a, b) {
-//         const result = await myfunction('test', 'test');
-//
-//         console.log(result);
-//     }
-//
-// // Call start
-//     start();
+    //     // My function
+    //     const myfunction = async function(x, y) {
+    //         return [
+    //             x,
+    //             y,
+    //         ];
+    //     }
+    //
+    // // Start function
+    //     const start = async function(a, b) {
+    //         const result = await myfunction('test', 'test');
+    //
+    //         console.log(result);
+    //     }
+    //
+    // // Call start
+    //     start();
 };
 
 

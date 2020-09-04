@@ -19,10 +19,10 @@ exports.findByCriteria = (SELECT_SQL, COUNT_SQL, searchRequest, result) => {
                     return;
                 }
                 if (res2.length) {
-                    result(null, { data: res, ct: res2[0].ct });
+                    result(null, {data: res, ct: res2[0].ct});
                     return;
                 }
-                result({ kind: "not_found" }, null);
+                result({kind: "not_found"}, null);
             });
         }
     });
@@ -34,7 +34,7 @@ function generateWhere(searchRequest) {
     let conditions = " ";
     if (searchRequest.searchKeys != null && searchRequest.searchKeys.length > 0) {
         for (let i = 0; i < searchRequest.searchKeys.length; i++) {
-            conditions =  appendCondition(searchRequest.searchKeys[i], searchRequest.operators[i], searchRequest.values[i], conditions);
+            conditions = appendCondition(searchRequest.searchKeys[i], searchRequest.operators[i], searchRequest.values[i], conditions);
         }
     }
     return initQuery + conditions;
@@ -59,16 +59,60 @@ function appendCondition(key, operator, value, where) {
         case "=":
         case "eq": {
             where = where + ` AND ${key} = ${value}`;
-            // if (value instanceof Number) {
-            //     where = where + ` AND ${key} = ${value}`;
-            // } 
-            // else if (value == true || value == false) {
-            //     where = where + ` AND ${key} IS ${value}`;
-            // }
+            if (value.constructor === Number) {
+                where = where + ` AND ${key} = ${value}`;
+            } else if (value.constructor === String) {
+                if (value === "true" || value === "false")
+                    where = where + ` AND ${key} IS ${value}`;
+                else
+                    where = where + ` AND ${key} = ${value}`;
+            } else {
+                where = where + ` AND ${key} = ${value}`;
+            }
             break;
         }
         case "like": {
             where = where + ` AND ${key} LIKE '%${value}%' `;
+            break;
+        }
+        case "%like": {
+            where = where + ` AND ${key} LIKE '%${value}' `;
+            break;
+        }
+        case "like%": {
+            where = where + ` AND ${key} LIKE '${value}%' `;
+            break;
+        }
+        case ">":
+        case "gt": {
+            if (value.constructor === Number)
+                where = where + ` AND ${key} > ${value} `;
+            else
+                where = where + ` AND ${key} > '${value}' `;
+            break;
+        }
+        case "<":
+        case "lt": {
+            if (value.constructor === Number)
+                where = where + ` AND ${key} < ${value} `;
+            else
+                where = where + ` AND ${key} < '${value}' `;
+            break;
+        }
+        case ">=":
+        case "gte": {
+            if (value.constructor === Number)
+                where = where + ` AND ${key} >= ${value} `;
+            else
+                where = where + ` AND ${key} >= '${value}' `;
+            break;
+        }
+        case "<=":
+        case "lte": {
+            if (value.constructor === Number)
+                where = where + ` AND ${key} <= ${value} `;
+            else
+                where = where + ` AND ${key} <= '${value}' `;
             break;
         }
         case "in": {

@@ -1,11 +1,11 @@
 const poolConnection = require("../database/db.pool");
 
-exports.findByCriteria = (SELECT_SQL, COUNT_SQL, searchRequest, result) => {
+exports.findByCriteria = (SELECT_SQL, COUNT_SQL, filter, searchRequest, result) => {
     // if (searchRequest instanceof this.searchRequest) {
     //     console.log(true);
     // }
-    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + generateLimit(searchRequest);
-    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest);
+    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
+    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest) + filter;
 
     console.log(SELECT_SQL);
 
@@ -27,7 +27,7 @@ exports.findByCriteria = (SELECT_SQL, COUNT_SQL, searchRequest, result) => {
         }
     });
 
-}
+};
 
 function generateWhere(searchRequest) {
     let initQuery = ' WHERE 1=1 ';

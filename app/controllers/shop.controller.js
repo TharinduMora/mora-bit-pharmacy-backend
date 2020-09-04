@@ -95,6 +95,6 @@ exports.findByCriteria = (req, res) => {
 
     let searchReq = new SearchRequest(req.body);
 
-    // searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, filter, searchReq, res);
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
+    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, filter, searchReq, res);
+    // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
 };

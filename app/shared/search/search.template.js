@@ -10,7 +10,12 @@ exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, filter, searchReq, res)
             }
             res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
         } else {
-            res.send(dynamicResponse.searchResponse({recordCount: searchResult.ct, data: searchResult.data}));
+            res.send(dynamicResponse.searchResponse({
+                offset: searchReq.offset,
+                limit: searchReq.limit,
+                recordCount: searchResult.ct,
+                data: searchResult.data
+            }));
         }
     })
 };
@@ -22,12 +27,17 @@ exports.dynamicDataOnlySearch = (SELECT_SQL, filter, searchReq, res) => {
                 res.status(204).send();
                 return;
             }
-            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
+            res.status(500).send(dynamicResponse.error({
+                message: err.message || "Some error occurred while retrieving shops."
+            }));
         } else {
-            res.send(dynamicResponse.searchResponse({data: searchResult.data}));
+            res.send(dynamicResponse.searchResponse({
+                data: searchResult.data
+            }));
         }
     })
 };
+
 
 function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
     SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
@@ -71,6 +81,7 @@ function searchWithCount(SELECT_SQL, COUNT_SQL, filter, searchRequest, result) {
         }
     });
 }
+
 
 function generateWhere(searchRequest) {
     let initQuery = ' WHERE 1=1 ';

@@ -20,6 +20,8 @@ DynamicResponse.success = (response) => {
 
 DynamicResponse.searchResponse = (response) => {
     this.status = Status.RESPONSE_SUCCESS;
+    this.offset = response.offset;
+    this.limit = response.limit;
     this.recordCount = response.recordCount;
     this.data = response.data;
     return this;

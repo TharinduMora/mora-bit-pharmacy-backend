@@ -1,6 +1,50 @@
 const poolConnection = require("../database/db.pool");
+const dynamicResponse = require("../../shared/dynamic.response");
 
-exports.findByCriteria = (SELECT_SQL, COUNT_SQL, filter, searchRequest, result) => {
+exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, filter, searchReq, res) => {
+    searchWithCount(SELECT_SQL, COUNT_SQL, filter, searchReq, (err, searchResult) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(204).send();
+                return;
+            }
+            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
+        } else {
+            res.send(dynamicResponse.searchResponse({recordCount: searchResult.ct, data: searchResult.data}));
+        }
+    })
+};
+
+exports.dynamicDataOnlySearch = (SELECT_SQL, filter, searchReq, res) => {
+    dataOnlySearch(SELECT_SQL, filter, searchReq, (err, searchResult) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(204).send();
+                return;
+            }
+            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
+        } else {
+            res.send(dynamicResponse.searchResponse({data: searchResult.data}));
+        }
+    })
+};
+
+function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
+    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
+    poolConnection.query(SELECT_SQL, (err, res) => {
+        if (err) {
+            result(null, err);
+            return;
+        }
+        if (res.length) {
+            result(null, {data: res});
+            return;
+        }
+        result({kind: "not_found"}, null);
+    });
+}
+
+function searchWithCount(SELECT_SQL, COUNT_SQL, filter, searchRequest, result) {
     // if (searchRequest instanceof this.searchRequest) {
     //     console.log(true);
     // }
@@ -26,8 +70,7 @@ exports.findByCriteria = (SELECT_SQL, COUNT_SQL, filter, searchRequest, result) 
             });
         }
     });
-
-};
+}
 
 function generateWhere(searchRequest) {
     let initQuery = ' WHERE 1=1 ';
@@ -42,14 +85,6 @@ function generateWhere(searchRequest) {
 
 function generateLimit(searchRequest) {
     let condition = '';
-    let offset = 0;
-    let limit = 10;
-
-    if (searchRequest.offset)
-        offset = searchRequest.offset;
-    if (searchRequest.limit)
-        limit = searchRequest.limit;
-
     condition = ` LIMIT ${searchRequest.offset},${searchRequest.limit}`;
     return condition;
 }

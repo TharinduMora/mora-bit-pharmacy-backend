@@ -5,7 +5,7 @@ exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) 
     let query = " ";
     let value = [];
     Object.keys(loopingObject).forEach(function (key) {
-        if (loopingObject[key] != undefined && !updateDisableColumns.includes(key)) {
+        if (loopingObject[key] !== undefined && !updateDisableColumns.includes(key)) {
             query = query + key + " = ? , ";
             value.push(loopingObject[key])
         }

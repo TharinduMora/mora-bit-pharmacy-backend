@@ -7,5 +7,8 @@ module.exports = {
     },
     SERVER: {
         PORT: 3000
+    },
+    PAGINATION: {
+        MAX_LIMIT: 100
     }
 };

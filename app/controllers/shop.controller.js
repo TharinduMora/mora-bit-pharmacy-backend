@@ -86,8 +86,8 @@ exports.update = (req, res) => {
 exports.findByCriteria = (req, res) => {
 
     // Validate the Request
-    if (!commonFunctions.requestValidator(req.body, SearchRequest.API, [], false, res))
-        return;
+    // if (!commonFunctions.requestValidator(req.body, SearchRequest.API, [], false, res))
+    //     return;
 
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Shop.EntityName} `;

@@ -2,6 +2,7 @@ const Status = require("../config/main.config").STATUS;
 
 DynamicResponse = (response) => {
     this.status = response.status;
+    return this;
 };
 
 DynamicResponse.error = (response) => {

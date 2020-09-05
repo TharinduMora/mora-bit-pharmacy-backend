@@ -10,5 +10,9 @@ module.exports = {
     },
     PAGINATION: {
         MAX_LIMIT: 100
+    },
+    UPLOAD_FILES:{
+        DIR_PATH:'/uploads',
+        DIR_NAME:'uploads'
     }
 };

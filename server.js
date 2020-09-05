@@ -1,8 +1,23 @@
 const express = require("express");
 const bodyParser = require("body-parser");
+var path = require('path');
+const fs = require("fs");
+
 const appConfig = require("./app.config");
+const fileUploader = require("./app/shared/file-upload/file.upload");
+const dynamicResponse = require("./app/shared/dynamic.response");
 
 const app = express();
+
+fs.mkdir(path.join(__dirname,appConfig.UPLOAD_FILES.DIR_NAME), { recursive: true }, function(err) {
+    if (err) {
+        console.log(err)
+    } else {
+        console.log("New directory successfully created.")
+    }
+});
+
+app.use(appConfig.UPLOAD_FILES.DIR_PATH,express.static(path.join(__dirname,appConfig.UPLOAD_FILES.DIR_NAME)));
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
@@ -17,10 +32,15 @@ app.get("/", (req, res) => {
 
 app.use("/shop",require("./app/routes/shop.routes.js"));
 
-// require("./app/routes/customer.routes.js")(app);
-// require("./app/routes/shop.routes.js")(app);
+//upload route
+app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
+    try {
+        return res.status(200).send(dynamicResponse.uploadSuccess({ message: 'File uploaded successfully', url:req.file.path || null}));
+    } catch (error) {
+        return res.status(500).send(dynamicResponse.error({ message: error || 'File uploaded failed'}));
+    }
+});
 
-const PORT = appConfig.SERVER.PORT;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
+app.listen(appConfig.SERVER.PORT, () => {
+    console.log(`Server is running on port ${appConfig.SERVER.PORT}.`);
 });

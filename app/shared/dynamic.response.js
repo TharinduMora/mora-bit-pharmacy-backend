@@ -27,4 +27,11 @@ DynamicResponse.searchResponse = (response) => {
     return this;
 };
 
+DynamicResponse.uploadSuccess = (response) => {
+    this.status = Status.RESPONSE_SUCCESS;
+    this.message = response.message;
+    this.url = response.url;
+    return this;
+};
+
 module.exports = DynamicResponse;

@@ -1,6 +1,6 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-var path = require('path');
+const path = require('path');
 const fs = require("fs");
 
 const appConfig = require("./app.config");
@@ -13,7 +13,7 @@ fs.mkdir(path.join(__dirname,appConfig.UPLOAD_FILES.DIR_NAME), { recursive: true
     if (err) {
         console.log(err)
     } else {
-        console.log("New directory successfully created.")
+        console.log("Uploads directory successfully created.")
     }
 });
 
@@ -25,14 +25,12 @@ app.use(bodyParser.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({extended: true}));
 
-// simple route
 app.get("/", (req, res) => {
     res.json({message: "Welcome to smart pharmacy application."});
 });
 
 app.use("/shop",require("./app/routes/shop.routes.js"));
 
-//upload route
 app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
     try {
         return res.status(200).send(dynamicResponse.uploadSuccess({ message: 'File uploaded successfully', url:req.file.path || null}));

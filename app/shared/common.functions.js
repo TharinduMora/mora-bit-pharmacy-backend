@@ -1,22 +1,6 @@
 const dynamicResponse = require("../shared/dynamic.response");
 const payloadChecker = require('payload-validator');
-
-exports.queryAndValueGenerator = function (loopingObject, updateDisableColumns) {
-    let query = " ";
-    let value = [];
-    Object.keys(loopingObject).forEach(function (key) {
-        if (loopingObject[key] !== undefined && !updateDisableColumns.includes(key)) {
-            query = query + key + " = ? , ";
-            value.push(loopingObject[key])
-        }
-    });
-    query = query.slice(0, query.lastIndexOf(","));
-
-    return {
-        query: query,
-        values: value
-    };
-};
+const {APP_ROLES} = require("../../app.role");
 
 exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
     if (!reqBody) {
@@ -34,7 +18,7 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
 exports.authValidator = (functionId) => {
     return (req, res, next) => {
         req.admin = {
-            functions: [1, 2]
+            functions: APP_ROLES.ROLE_1.FUNCTIONS
         };
         if (req.admin.functions.includes(functionId)) {
             console.log("true");

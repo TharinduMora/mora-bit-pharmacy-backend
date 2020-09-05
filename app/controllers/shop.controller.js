@@ -32,20 +32,9 @@ exports.create = (req, res) => {
 // Retrieve all Customers from the database.
 exports.findAll = (req, res) => {
 
-    let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} LIMIT 0,3 `;
-    let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Shop.EntityName} `;
+    let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
 
-    dbOperations.search(SELECT_SQL, COUNT_SQL, (err, searchResult) => {
-        if (err) {
-            if (err.kind === "not_found") {
-                res.status(204).send();
-                return;
-            }
-            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
-        } else {
-            res.send(dynamicResponse.searchResponse({recordCount: searchResult.ct, data: searchResult.data}));
-        }
-    })
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL,"",new SearchRequest({}),res);
 };
 
 // Find a single Customer with a customerId

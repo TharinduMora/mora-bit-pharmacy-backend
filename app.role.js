@@ -5,10 +5,10 @@ exports.APP_ROLES = {
         ID: 1,
         NAME: "Super Role",
         FUNCTIONS: [
-            AppFunctions.FIND_SHOP_BY_CRITERIA,
-            AppFunctions.VIEW_SHOP_DETAILS,
-            AppFunctions.CREATE_SHOP,
-            AppFunctions.UPDATE_SHOP
+            AppFunctions.FIND_SHOP_BY_CRITERIA.ID,
+            AppFunctions.VIEW_SHOP_DETAILS.ID,
+            AppFunctions.CREATE_SHOP.ID,
+            AppFunctions.UPDATE_SHOP.ID
         ]
     }
 };

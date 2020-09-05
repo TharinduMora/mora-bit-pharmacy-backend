@@ -15,7 +15,7 @@ exports.create = (entityName, entityObject, result) => {
 };
 
 exports.updateEntity = (updatingObject, entityName, condition, primaryId, updateDisableColumns, result) => {
-    const queryAndValueGenerator = commonFunctions.queryAndValueGenerator(updatingObject, updateDisableColumns);
+    const queryAndValueGenerator = queryAndValueGenerator(updatingObject, updateDisableColumns);
     const sqlQuery = "UPDATE " + entityName + " SET " + queryAndValueGenerator.query + " WHERE " + condition;
     const values = queryAndValueGenerator.values;
     poolConnection.query(
@@ -70,4 +70,21 @@ exports.search = (SELECT_SQL, COUNT_SQL, result) => {
             });
         }
     });
+};
+
+queryAndValueGenerator = function (loopingObject, updateDisableColumns) {
+    let query = " ";
+    let value = [];
+    Object.keys(loopingObject).forEach(function (key) {
+        if (loopingObject[key] !== undefined && !updateDisableColumns.includes(key)) {
+            query = query + key + " = ? , ";
+            value.push(loopingObject[key])
+        }
+    });
+    query = query.slice(0, query.lastIndexOf(","));
+
+    return {
+        query: query,
+        values: value
+    };
 };

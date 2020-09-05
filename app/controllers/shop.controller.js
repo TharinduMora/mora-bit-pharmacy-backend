@@ -4,10 +4,8 @@ const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
 
-const SearchRequest = require("../shared/search/SearchRequest")
+const SearchRequest = require("../shared/search/SearchRequest");
 
-
-// Create and Save a new Customer
 exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
@@ -29,7 +27,6 @@ exports.create = (req, res) => {
     });
 };
 
-// Retrieve all Customers from the database.
 exports.findAll = (req, res) => {
 
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
@@ -37,7 +34,6 @@ exports.findAll = (req, res) => {
     searchTemplate.dynamicDataOnlySearch(SELECT_SQL,"",new SearchRequest({}),res);
 };
 
-// Find a single Customer with a customerId
 exports.findOne = (req, res) => {
     dbOperations.findOne(Shop.EntityName, "id", req.params.shopId, (err, data) => {
         if (err) {

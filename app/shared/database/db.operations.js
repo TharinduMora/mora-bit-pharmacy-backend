@@ -1,5 +1,4 @@
 const poolConnection = require("./db.pool");
-const commonFunctions = require("../common.functions");
 
 function queryAndValueGeneratorFunc(loopingObject, updateDisableColumns) {
     let query = " ";
@@ -26,7 +25,7 @@ exports.create = (entityName, entityObject, result) => {
             return;
         }
 
-        console.log("created : " + entityName, {id: res.insertId, ...entityObject});
+        console.log("created : " + entityName + " ID: "+res.insertId);
         result(null, {id: res.insertId, ...entityObject});
     });
 };

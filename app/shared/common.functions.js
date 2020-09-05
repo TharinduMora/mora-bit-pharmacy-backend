@@ -18,36 +18,41 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
 exports.authValidator = (functionId) => {
     return (req, res, next) => {
         req.admin = {
-            functions: APP_ROLES.ROLE_1.FUNCTIONS
+            roleId: 1
         };
-        if (req.admin.functions.includes(functionId)) {
-            console.log("true");
+
+        let role = APP_ROLES["ROLE_"+req.admin.roleId];
+
+        if(!role){
+            res.status(401).send({ message: "Invalid Role Id : " +  req.admin.roleId });
+            return ;
+        }
+
+        if (role.FUNCTIONS.includes(functionId)) {
             next();
         } else {
-            console.log("false");
             res.status(401).send({ unauthorized: true });
         }
     }
-
-    //     // My function
-    //     const myfunction = async function(x, y) {
-    //         return [
-    //             x,
-    //             y,
-    //         ];
-    //     }
-    //
-    // // Start function
-    //     const start = async function(a, b) {
-    //         const result = await myfunction('test', 'test');
-    //
-    //         console.log(result);
-    //     }
-    //
-    // // Call start
-    //     start();
 };
 
+//     // My function
+//     const myfunction = async function(x, y) {
+//         return [
+//             x,
+//             y,
+//         ];
+//     }
+//
+// // Start function
+//     const start = async function(a, b) {
+//         const result = await myfunction('test', 'test');
+//
+//         console.log(result);
+//     }
+//
+// // Call start
+//     start();
 
 
 // -- 1. start a new transaction
@@ -84,5 +89,4 @@ exports.authValidator = (functionId) => {
 //
 // -- 5. commit changes
 // COMMIT;
-
 // or ROLLBACK;

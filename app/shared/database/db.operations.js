@@ -1,4 +1,7 @@
-const poolConnection = require("./db.pool");
+// const poolConnection = require("./db.pool");
+
+const ConnectionPool = require("./db.connection.pool.singleton");
+const poolConnection = ConnectionPool.getConnectionPool();
 
 function queryAndValueGeneratorFunc(loopingObject, updateDisableColumns) {
     let query = " ";

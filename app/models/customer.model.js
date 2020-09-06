@@ -1,4 +1,4 @@
-const poolConnection = require("../shared/database/db.pool");
+const poolConnection = require("../shared/database/db.connection.pool.singleton");
 
 // constructor
 const Customer = function(customer) {

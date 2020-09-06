@@ -1,8 +1,9 @@
 const Shop = require("../models/shop.model");
-const dynamicResponse = require("../shared/dynamic.response");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
+
+const ResponseFactory = require("../shared/dynamic.response.factory");
 
 const SearchRequest = require("../shared/search/SearchRequest");
 
@@ -21,17 +22,18 @@ exports.create = (req, res) => {
 
     dbOperations.create(Shop.EntityName, shop, (err, data) => {
         if (err)
-            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while creating the Shop."}));
+            res.status(500).send(ResponseFactory.getErrorResponse({message: err.message || "Some error occurred while creating the Shop."}));
         else
-            res.send(dynamicResponse.success({data: data, message: "Shop Created"}));
+            res.send(ResponseFactory.getSuccessResponse({data: data, message: "Shop Created"}));
     });
 };
 
 exports.findAll = (req, res) => {
 
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
+    let FILTER = ``;
 
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL,"",new SearchRequest({}),res);
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL,FILTER,new SearchRequest({}),res);
 };
 
 exports.findOne = (req, res) => {
@@ -40,9 +42,9 @@ exports.findOne = (req, res) => {
             if (err.kind === "not_found") {
                 res.status(204).send();
             } else {
-                res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shop with Id:" + req.params.shopId}));
+                res.status(500).send(ResponseFactory.getErrorResponse({message: err.message || "Some error occurred while retrieving shop with Id:" + req.params.shopId}));
             }
-        } else res.send(dynamicResponse.success({data: data}));
+        } else res.send(ResponseFactory.getSuccessResponse({data: data}));
     });
 };
 
@@ -57,14 +59,14 @@ exports.update = (req, res) => {
 
     let updatingShop = new Shop(req.body);
 
-    dbOperations.updateEntity(new Shop(updatingShop), Shop.EntityName, updateCondition, req.body.id, Shop.updateRestrictedColumns, (err, data) => {
+    dbOperations.updateEntity(new Shop(updatingShop), Shop.EntityName, updateCondition, req.body.id, Shop.updateRestrictedColumns, (err, data) => {///
         if (err) {
             if (err.kind === "not_found") {
                 res.status(204).send();
             } else {
-                res.status(500).send(dynamicResponse.error({message: err.message || "Shop Updating failed with Id:" + req.body.id}));
+                res.status(500).send(ResponseFactory.getErrorResponse({message: err.message || "Shop Updating failed with Id:" + req.body.id}));
             }
-        } else res.send(dynamicResponse.success({id: req.body.id, message: "Successfully Updated!"}));
+        } else res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
     });
 };
 
@@ -76,10 +78,10 @@ exports.findByCriteria = (req, res) => {
 
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Shop.EntityName} `;
-    let filter = '';
+    let FILTER = '';
 
     let searchReq = new SearchRequest(req.body);
 
-    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, filter, searchReq, res);
+    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
 };

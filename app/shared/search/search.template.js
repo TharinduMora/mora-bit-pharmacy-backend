@@ -1,16 +1,20 @@
-const poolConnection = require("../database/db.pool");
-const dynamicResponse = require("../../shared/dynamic.response");
+const ConnectionPoolClass = require("../database/db.connection.pool.singleton");
+const ResponseFactory = require("../../shared/dynamic.response.factory");
 
-exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, filter, searchReq, res) => {
-    searchWithCount(SELECT_SQL, COUNT_SQL, filter, searchReq, (err, searchResult) => {
+const connectionPool = ConnectionPoolClass.getConnectionPool();
+
+exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, searchReq, res) => {
+    searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchReq, (err, searchResult) => {
         if (err) {
             if (err.kind === "not_found") {
                 res.status(204).send();
                 return;
             }
-            res.status(500).send(dynamicResponse.error({message: err.message || "Some error occurred while retrieving shops."}));
+            res.status(500).send(ResponseFactory.getErrorResponse({
+                message: err.message || "Some error occurred while retrieving shops."
+            }));
         } else {
-            res.send(dynamicResponse.searchResponse({
+            res.send(ResponseFactory.getSearchResponse({
                 offset: searchReq.offset,
                 limit: searchReq.limit,
                 recordCount: searchResult.ct,
@@ -20,18 +24,18 @@ exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, filter, searchReq, res)
     })
 };
 
-exports.dynamicDataOnlySearch = (SELECT_SQL, filter, searchReq, res) => {
-    dataOnlySearch(SELECT_SQL, filter, searchReq, (err, searchResult) => {
+exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, searchReq, res) => {
+    dataOnlySearch(SELECT_SQL, FILTER, searchReq, (err, searchResult) => {
         if (err) {
             if (err.kind === "not_found") {
                 res.status(204).send();
                 return;
             }
-            res.status(500).send(dynamicResponse.error({
+            res.status(500).send(ResponseFactory.getErrorResponse({
                 message: err.message || "Some error occurred while retrieving shops."
             }));
         } else {
-            res.send(dynamicResponse.searchResponse({
+            res.send(ResponseFactory.getSearchResponse({
                 data: searchResult.data
             }));
         }
@@ -41,7 +45,7 @@ exports.dynamicDataOnlySearch = (SELECT_SQL, filter, searchReq, res) => {
 
 function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
     SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
-    poolConnection.query(SELECT_SQL, (err, res) => {
+    connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
             result(null, err);
             return;
@@ -54,20 +58,15 @@ function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
     });
 }
 
-function searchWithCount(SELECT_SQL, COUNT_SQL, filter, searchRequest, result) {
-    // if (searchRequest instanceof this.searchRequest) {
-    //     console.log(true);
-    // }
-    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
-    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest) + filter;
+function searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchRequest, result) {
+    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + FILTER + generateLimit(searchRequest);
+    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest) + FILTER;
 
-    console.log(SELECT_SQL);
-
-    poolConnection.query(SELECT_SQL, (err, res) => {
+    connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
             result(null, err);
         } else {
-            poolConnection.query(COUNT_SQL, (err2, res2) => {
+            connectionPool.query(COUNT_SQL, (err2, res2) => {
                 if (err2) {
                     result(null, err2);
                     return;

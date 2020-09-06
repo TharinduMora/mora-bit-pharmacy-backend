@@ -3,9 +3,9 @@ const bodyParser = require("body-parser");
 const path = require('path');
 const fs = require("fs");
 
-const appConfig = require("./app.config");
 const fileUploader = require("./app/shared/file-upload/file.upload");
-const dynamicResponse = require("./app/shared/dynamic.response");
+const appConfig = require("./app.config");
+const ResponseFactory = require("./app/shared/dynamic.response.factory");
 
 const app = express();
 
@@ -13,7 +13,7 @@ fs.mkdir(path.join(__dirname,appConfig.UPLOAD_FILES.DIR_NAME), { recursive: true
     if (err) {
         console.log(err)
     } else {
-        console.log("Uploads directory successfully created.")
+        console.log("'Uploads' directory successfully created.")
     }
 });
 
@@ -33,9 +33,9 @@ app.use("/shop",require("./app/routes/shop.routes.js"));
 
 app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
     try {
-        return res.status(200).send(dynamicResponse.uploadSuccess({ message: 'File uploaded successfully', url:req.file.path || null}));
+        return res.status(200).send(ResponseFactory.getUploadSuccessResponse({ message: 'File uploaded successfully', url:req.file.path || null}));
     } catch (error) {
-        return res.status(500).send(dynamicResponse.error({ message: error || 'File uploaded failed'}));
+        return res.status(500).send(ResponseFactory.getErrorResponse({ message: error || 'File uploaded failed'}));
     }
 });
 

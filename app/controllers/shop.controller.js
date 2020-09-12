@@ -97,20 +97,24 @@ exports.transTest = (req, res) => {
         console.log('number commit',data);
         res.send("done");
     }).on('rollback', function(err){
-        console.log(err);
+        console.log(err.sqlMessage);
         res.status(500).send("Internal Server Error");
     });
 
     const shop = new Shop({
         name: "Test",
-        email: "Test",
+        // email: "Test",
         telephone: "Test",
         address: "Test",
         city: "Test"
     });
 
     chain.
-    query(`UPDATE ${Shop.EntityName} SET name = 'trans' WHERE id = 1`).
-    query(`INSERT INTO ${Shop.EntityName} SET ?`, shop);
+    query(`UPDATE ${Shop.EntityName} SET name = 'trans' WHERE id = 1`).on('result',function (result){
+        // console.log(result);
+    }).
+    query(`INSERT INTO ${Shop.EntityName} SET ?`, shop).on('result',function (result){
+        console.log(result.insertId);
+    });
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
 };

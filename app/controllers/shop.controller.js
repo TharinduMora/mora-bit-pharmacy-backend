@@ -7,6 +7,9 @@ const ResponseFactory = require("../shared/dynamic.response.factory");
 
 const SearchRequest = require("../shared/search/SearchRequest");
 
+const DBTransactionConnectionSingleton = require("../shared/database/db.transaction.connection.singleton");
+const transactionConnection = DBTransactionConnectionSingleton.getTransactionConnection();
+
 exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
@@ -83,5 +86,31 @@ exports.findByCriteria = (req, res) => {
     let searchReq = new SearchRequest(req.body);
 
     searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchReq, res);
+    // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
+};
+
+exports.transTest = (req, res) => {
+
+    const chain = transactionConnection.chain();
+
+    chain.on('commit', function(data){
+        console.log('number commit',data);
+        res.send("done");
+    }).on('rollback', function(err){
+        console.log(err);
+        res.status(500).send("Internal Server Error");
+    });
+
+    const shop = new Shop({
+        name: "Test",
+        email: "Test",
+        telephone: "Test",
+        address: "Test",
+        city: "Test"
+    });
+
+    chain.
+    query(`UPDATE ${Shop.EntityName} SET name = 'trans' WHERE id = 1`).
+    query(`INSERT INTO ${Shop.EntityName} SET ?`, shop);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
 };

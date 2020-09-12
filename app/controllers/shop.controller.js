@@ -2,13 +2,8 @@ const Shop = require("../models/shop.model");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
-
 const ResponseFactory = require("../shared/dynamic.response.factory");
-
 const SearchRequest = require("../shared/search/SearchRequest");
-
-const DBTransactionConnectionSingleton = require("../shared/database/db.transaction.connection.singleton");
-const transactionConnection = DBTransactionConnectionSingleton.getTransactionConnection();
 
 exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
@@ -36,7 +31,7 @@ exports.findAll = (req, res) => {
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
     let FILTER = ``;
 
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL,FILTER,new SearchRequest({}),res);
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, new SearchRequest({}), res);
 };
 
 exports.findOne = (req, res) => {
@@ -91,30 +86,35 @@ exports.findByCriteria = (req, res) => {
 
 exports.transTest = (req, res) => {
 
-    const chain = transactionConnection.chain();
-
-    chain.on('commit', function(data){
-        console.log('number commit',data);
-        res.send("done");
-    }).on('rollback', function(err){
-        console.log(err.sqlMessage);
-        res.status(500).send("Internal Server Error");
-    });
+    let transactionalQueryList = [];
 
     const shop = new Shop({
         name: "Test",
-        // email: "Test",
+        email: "Test Trans",
         telephone: "Test",
         address: "Test",
         city: "Test"
     });
 
-    chain.
-    query(`UPDATE ${Shop.EntityName} SET name = 'trans' WHERE id = 1`).on('result',function (result){
-        // console.log(result);
-    }).
-    query(`INSERT INTO ${Shop.EntityName} SET ?`, shop).on('result',function (result){
-        console.log(result.insertId);
-    });
-    // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
+    // passing queryId is must for getting result object
+    const shopUpdateQuery = dbOperations.getUpdateQuery(1, new Shop(req.body), Shop.EntityName, ` id = ${req.body.id} `, req.body.id, Shop.updateRestrictedColumns);
+    const shopInsertQuery = dbOperations.getInsertQuery(2, Shop.EntityName, shop);
+
+    transactionalQueryList.push(shopInsertQuery, shopUpdateQuery);
+
+    const resultMapKey = 'resMap_';
+
+    dbOperations.runAsTransaction(transactionalQueryList, resultMapKey, (err, result) => {
+        if (err) {
+            res.status(500).send(err);
+        } else {
+            if (result[resultMapKey + 2]) {
+                let newShop = {...shop};
+                newShop.id = result[1].insertId;
+                res.send(newShop);
+                return;
+            }
+            res.send("Success");
+        }
+    })
 };

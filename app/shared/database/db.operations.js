@@ -3,6 +3,9 @@
 const ConnectionPool = require("./db.connection.pool.singleton");
 const poolConnection = ConnectionPool.getConnectionPool();
 
+const DBTransactionConnectionSingleton = require("./db.transaction.connection.singleton");
+const transactionConnection = DBTransactionConnectionSingleton.getTransactionConnection();
+
 function queryAndValueGeneratorFunc(loopingObject, updateDisableColumns) {
     let query = " ";
     let value = [];
@@ -90,3 +93,47 @@ exports.search = (SELECT_SQL, COUNT_SQL, result) => {
         }
     });
 };
+
+exports.runAsTransaction = (queryListArray , resultMapKey, result) => {
+    const chain = transactionConnection.chain();
+    chain.on('commit', function(data){
+        result(null,resultMap)
+    }).on('rollback', function(err){
+        result(err.sqlMessage,null)
+    });
+
+    const resultMap = {};
+
+    queryListArray.forEach((query)=>{
+        if(query instanceof QueryValue){
+            chain.query(query.query,query.value).on('result',function (res){
+                if(res.affectedRows > 0 && res.insertId>0){
+                    resultMap[resultMapKey + query.queryId] = {insertId:res.insertId};
+                }
+            });
+        }
+    });
+};
+
+exports.getUpdateQuery = (queryId,updatingObject, entityName, condition, primaryId, updateDisableColumns)=>{
+    const queryAndValueGenerator = queryAndValueGeneratorFunc(updatingObject, updateDisableColumns);
+    const sqlQuery = "UPDATE " + entityName + " SET " + queryAndValueGenerator.query + " WHERE " + condition;
+    const values = queryAndValueGenerator.values;
+    return new QueryValue(queryId,sqlQuery,values);
+}
+
+exports.getInsertQuery = (queryId,entityName, entityObject)=>{
+    let queryValueObj = new QueryValue();
+    queryValueObj.queryId = queryId;
+    queryValueObj.query = `INSERT INTO ${entityName} SET ?`;
+    queryValueObj.value = entityObject;
+    return queryValueObj;
+}
+
+class QueryValue {
+    constructor(queryId,query,value) {
+        this.queryId = queryId;
+        this.query = query;
+        this.value = value;
+    }
+}

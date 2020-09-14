@@ -31,7 +31,7 @@ exports.create = (entityName, entityObject, result) => {
             return;
         }
 
-        console.log("created : " + entityName + " ID: "+res.insertId);
+        console.log("created : " + entityName + " ID: " + res.insertId);
         result(null, {id: res.insertId, ...entityObject});
     });
 };
@@ -74,19 +74,17 @@ exports.findOne = (entityName, primaryKey, primaryId, result) => {
     });
 };
 
-exports.isExist = (entityName, condition, result) => {
-    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${condition}`;
-    poolConnection.query(sqlQuery, (err, res) => {
+exports.getResultByQuery = (SELECT_SQL, result) => {
+    poolConnection.query(SELECT_SQL, (err, res) => {
         if (err) {
-            console.log("error: ", err);
-            result(err,false);
+            result(err, null);
             return;
         }
         if (res.length) {
-            result(null,true);
+            result(null, {data: res});
             return;
         }
-        result(null,false);
+        result({kind: "not_found"}, null);
     });
 };
 
@@ -110,35 +108,35 @@ exports.search = (SELECT_SQL, COUNT_SQL, result) => {
     });
 };
 
-exports.runAsTransaction = (queryListArray , resultMapKey, result) => {
+exports.runAsTransaction = (queryListArray, resultMapKey, result) => {
     const chain = transactionConnection.chain();
-    chain.on('commit', function(data){
-        result(null,resultMap)
-    }).on('rollback', function(err){
-        result(err.sqlMessage,null)
+    chain.on('commit', function (data) {
+        result(null, resultMap)
+    }).on('rollback', function (err) {
+        result(err.sqlMessage, null)
     });
 
     const resultMap = {};
 
-    queryListArray.forEach((query)=>{
-        if(query instanceof QueryValue){
-            chain.query(query.query,query.value).on('result',function (res){
-                if(res.affectedRows > 0 && res.insertId>0){
-                    resultMap[resultMapKey + query.queryId] = {insertId:res.insertId};
+    queryListArray.forEach((query) => {
+        if (query instanceof QueryValue) {
+            chain.query(query.query, query.value).on('result', function (res) {
+                if (res.affectedRows > 0 && res.insertId > 0) {
+                    resultMap[resultMapKey + query.queryId] = {insertId: res.insertId};
                 }
             });
         }
     });
 };
 
-exports.getUpdateQuery = (queryId,updatingObject, entityName, condition, primaryId, updateDisableColumns)=>{
+exports.getUpdateQuery = (queryId, updatingObject, entityName, condition, primaryId, updateDisableColumns) => {
     const queryAndValueGenerator = queryAndValueGeneratorFunc(updatingObject, updateDisableColumns);
     const sqlQuery = "UPDATE " + entityName + " SET " + queryAndValueGenerator.query + " WHERE " + condition;
     const values = queryAndValueGenerator.values;
-    return new QueryValue(queryId,sqlQuery,values);
+    return new QueryValue(queryId, sqlQuery, values);
 }
 
-exports.getInsertQuery = (queryId,entityName, entityObject)=>{
+exports.getInsertQuery = (queryId, entityName, entityObject) => {
     let queryValueObj = new QueryValue();
     queryValueObj.queryId = queryId;
     queryValueObj.query = `INSERT INTO ${entityName} SET ?`;
@@ -147,7 +145,7 @@ exports.getInsertQuery = (queryId,entityName, entityObject)=>{
 }
 
 class QueryValue {
-    constructor(queryId,query,value) {
+    constructor(queryId, query, value) {
         this.queryId = queryId;
         this.query = query;
         this.value = value;

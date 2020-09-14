@@ -10,8 +10,8 @@ exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
         return;
 
-    dbOperations.isExist(Admin.EntityName, ` userName = '${req.body.userName}'`, (err, result) => {
-        if (err) {
+    dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.userName),(err,result)=>{
+        if (err && err.kind !== 'not_found') {
             res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         }
         if (result) {
@@ -22,7 +22,6 @@ exports.create = (req, res) => {
     });
 
     function createNewAdmin() {
-        // Create a Admin
         const admin = new Admin({
             userName: req.body.userName,
             password: req.body.password,

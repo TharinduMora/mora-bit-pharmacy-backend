@@ -36,6 +36,12 @@ Admin.UPDATE_API = {
     adminType: 0
 };
 
+Admin.NamedQuery = {
+    getAdminByUserName(userName){
+        return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
+    }
+}
+
 Admin.creationMandatoryColumns = ["userName", "password", "email", "roleId"];
 Admin.updateMandatoryColumns = ["id"];
 Admin.updateRestrictedColumns = ["id", "email","userName", "password", "email"];

@@ -7,7 +7,7 @@ CREATE TABLE customers
     PRIMARY KEY (id)
 );
 
-CREATE TABLE customers
+CREATE TABLE shops
 (
     id        int          NOT NULL AUTO_INCREMENT,
     email     varchar(255) NOT NULL,
@@ -15,6 +15,22 @@ CREATE TABLE customers
     telephone varchar(255) DEFAULT NULL,
     address   varchar(255) DEFAULT NULL,
     city      varchar(255) DEFAULT NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE admin
+(
+    id        int          NOT NULL AUTO_INCREMENT,
+    userName  varchar(255) NOT NULL,
+    password  varchar(255) NOT NULL,
+    fullName  varchar(255) DEFAULT NULL,
+    email     varchar(255) NOT NULL,
+    telephone varchar(255) DEFAULT NULL,
+    address   varchar(255) DEFAULT NULL,
+    city      varchar(255) DEFAULT NULL,
+    roleId    int          NOT NULL,
+    adminType int          DEFAULT 2,
+    status    int          DEFAULT 0,
     PRIMARY KEY (id)
 );
 

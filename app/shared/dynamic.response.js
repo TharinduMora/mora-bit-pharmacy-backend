@@ -1,4 +1,4 @@
-const Status = require("../config/main.config").STATUS;
+const Status = require("../config/main.config").RESPONSE_STATUS;
 
 DynamicResponse = (response) => {
     this.status = response.status;

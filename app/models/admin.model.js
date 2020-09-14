@@ -38,6 +38,6 @@ Admin.UPDATE_API = {
 
 Admin.creationMandatoryColumns = ["userName", "password", "email", "roleId"];
 Admin.updateMandatoryColumns = ["id"];
-Admin.updateRestrictedColumns = ["id", "email"];
+Admin.updateRestrictedColumns = ["id", "email","userName", "password", "email"];
 
 module.exports = Admin;

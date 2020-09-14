@@ -74,8 +74,24 @@ exports.findOne = (entityName, primaryKey, primaryId, result) => {
     });
 };
 
+exports.isExist = (entityName, condition, result) => {
+    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${condition}`;
+    poolConnection.query(sqlQuery, (err, res) => {
+        if (err) {
+            console.log("error: ", err);
+            result(err,false);
+            return;
+        }
+        if (res.length) {
+            result(null,true);
+            return;
+        }
+        result(null,false);
+    });
+};
+
 exports.search = (SELECT_SQL, COUNT_SQL, result) => {
-    poolConnection.query(SELECT_Snot_foundQL, (err, res) => {
+    poolConnection.query(SELECT_SQL, (err, res) => {
         if (err) {
             result(null, err);
         } else {

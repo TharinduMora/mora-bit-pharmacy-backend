@@ -10,7 +10,18 @@ exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
         return;
 
-    function createNewAdmin(){
+    dbOperations.isExist(Admin.EntityName, ` userName = '${req.body.userName}'`, (err, result) => {
+        if (err) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+        }
+        if (result) {
+            res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
+        } else {
+            createNewAdmin();
+        }
+    });
+
+    function createNewAdmin() {
         // Create a Admin
         const admin = new Admin({
             userName: req.body.userName,
@@ -33,18 +44,6 @@ exports.create = (req, res) => {
                 res.send(ResponseFactory.getSuccessResponse({data: data, message: "Admin Created"}));
         });
     }
-
-    dbOperations.findOne(Admin.EntityName,"userName",`${req.body.userName}`,(err,result)=>{
-        if(result){
-            res.status(400).send(ResponseFactory.getErrorResponse({message:'User Name already exist'}));
-            return ;
-        }
-        if(err && err.kind === "not_found"){
-            createNewAdmin();
-        }else{
-            res.status(500).send(ResponseFactory.getErrorResponse({message:'Internal Server Error'}));
-        }
-    })
 };
 
 exports.findOne = (req, res) => {

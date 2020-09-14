@@ -43,6 +43,7 @@ app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
 
 
 app.use("/shop", require("./app/routes/shop.routes.js"));
+app.use("/admin", require("./app/routes/admin.routes.js"));
 
 app.listen(appConfig.SERVER.PORT, () => {
     console.log(`Server is running on port ${appConfig.SERVER.PORT}.`);

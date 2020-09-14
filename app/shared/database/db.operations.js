@@ -58,7 +58,7 @@ exports.updateEntity = (updatingObject, entityName, condition, primaryId, update
 };
 
 exports.findOne = (entityName, primaryKey, primaryId, result) => {
-    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = ${primaryId}`;
+    const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = '${primaryId}'`;
     poolConnection.query(sqlQuery, (err, res) => {
         if (err) {
             console.log("error: ", err);
@@ -66,7 +66,7 @@ exports.findOne = (entityName, primaryKey, primaryId, result) => {
             return;
         }
         if (res.length) {
-            console.log("found customer: ", res[0]);
+            // console.log("found customer: ", res[0]);
             result(null, res[0]);
             return;
         }
@@ -75,7 +75,7 @@ exports.findOne = (entityName, primaryKey, primaryId, result) => {
 };
 
 exports.search = (SELECT_SQL, COUNT_SQL, result) => {
-    poolConnection.query(SELECT_SQL, (err, res) => {
+    poolConnection.query(SELECT_Snot_foundQL, (err, res) => {
         if (err) {
             result(null, err);
         } else {

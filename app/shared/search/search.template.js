@@ -3,48 +3,8 @@ const ResponseFactory = require("../../shared/dynamic.response.factory");
 
 const connectionPool = ConnectionPoolClass.getConnectionPool();
 
-exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, searchReq, res) => {
-    searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchReq, (err, searchResult) => {
-        if (err) {
-            if (err.kind === "not_found") {
-                res.status(204).send();
-                return;
-            }
-            res.status(500).send(ResponseFactory.getErrorResponse({
-                message: err.message || "Some error occurred while retrieving shops."
-            }));
-        } else {
-            res.send(ResponseFactory.getSearchResponse({
-                offset: searchReq.offset,
-                limit: searchReq.limit,
-                recordCount: searchResult.ct,
-                data: searchResult.data
-            }));
-        }
-    })
-};
-
-exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, searchReq, res) => {
-    dataOnlySearch(SELECT_SQL, FILTER, searchReq, (err, searchResult) => {
-        if (err) {
-            if (err.kind === "not_found") {
-                res.status(204).send();
-                return;
-            }
-            res.status(500).send(ResponseFactory.getErrorResponse({
-                message: err.message || "Some error occurred while retrieving shops."
-            }));
-        } else {
-            res.send(ResponseFactory.getSearchResponse({
-                data: searchResult.data
-            }));
-        }
-    })
-};
-
-
-function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
-    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + filter + generateLimit(searchRequest);
+function dataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, searchRequest, result) {
+    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest, COLUMN_MAP) + FILTER + generateLimit(searchRequest);
     connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
             result(null, err);
@@ -58,9 +18,9 @@ function dataOnlySearch(SELECT_SQL, filter, searchRequest, result) {
     });
 }
 
-function searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchRequest, result) {
-    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest) + FILTER + generateLimit(searchRequest);
-    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest) + FILTER;
+function searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchRequest, result) {
+    SELECT_SQL = SELECT_SQL + generateWhere(searchRequest, COLUMN_MAP) + FILTER + generateLimit(searchRequest);
+    COUNT_SQL = COUNT_SQL + generateWhere(searchRequest, COLUMN_MAP) + FILTER;
 
     connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
@@ -81,13 +41,14 @@ function searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchRequest, result) {
     });
 }
 
-
-function generateWhere(searchRequest) {
+function generateWhere(searchRequest, COLUMN_MAP) {
     let initQuery = ' WHERE 1=1 ';
     let conditions = " ";
     if (searchRequest.searchKeys != null && searchRequest.searchKeys.length > 0) {
         for (let i = 0; i < searchRequest.searchKeys.length; i++) {
-            conditions = appendCondition(searchRequest.searchKeys[i], searchRequest.operators[i], searchRequest.values[i], conditions);
+            if (COLUMN_MAP[searchRequest.searchKeys[i]]) {
+                conditions = appendCondition(searchRequest.searchKeys[i], searchRequest.operators[i], searchRequest.values[i], conditions);
+            }
         }
     }
     return initQuery + conditions;
@@ -169,3 +130,43 @@ function appendCondition(key, operator, value, where) {
     }
     return where;
 }
+
+exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res) => {
+    searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP,searchReq, (err, searchResult) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(204).send();
+                return;
+            }
+            res.status(500).send(ResponseFactory.getErrorResponse({
+                message: err.message || "Some error occurred while retrieving shops."
+            }));
+        } else {
+            res.send(ResponseFactory.getSearchResponse({
+                offset: searchReq.offset,
+                limit: searchReq.limit,
+                recordCount: searchResult.ct,
+                data: searchResult.data
+            }));
+        }
+    })
+};
+
+exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, COLUMN_MAP, searchReq, res) => {
+    dataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, searchReq, (err, searchResult) => {
+        if (err) {
+            if (err.kind === "not_found") {
+                res.status(204).send();
+                return;
+            }
+            res.status(500).send(ResponseFactory.getErrorResponse({
+                message: err.message || "Some error occurred while retrieving shops."
+            }));
+        } else {
+            res.send(ResponseFactory.getSearchResponse({
+                data: searchResult.data
+            }));
+        }
+    })
+};
+

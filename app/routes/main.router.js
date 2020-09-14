@@ -1,4 +1,3 @@
-const express = require("express");
-const router = express.Router();
-
-router.ge
+exports.mainRouter = function(app){
+    app.use("/shop",require("./shop.routes"));
+};

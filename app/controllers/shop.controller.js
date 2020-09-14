@@ -26,14 +26,6 @@ exports.create = (req, res) => {
     });
 };
 
-exports.findAll = (req, res) => {
-
-    let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
-    let FILTER = ``;
-
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, new SearchRequest({}), res);
-};
-
 exports.findOne = (req, res) => {
     dbOperations.findOne(Shop.EntityName, "id", req.params.shopId, (err, data) => {
         if (err) {
@@ -68,6 +60,15 @@ exports.update = (req, res) => {
     });
 };
 
+exports.findAll = (req, res) => {
+
+    let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
+    let FILTER = ``;
+    let COLUMN_MAP = [];
+
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, new SearchRequest({}), res);
+};
+
 exports.findByCriteria = (req, res) => {
 
     // Validate the Request
@@ -77,10 +78,16 @@ exports.findByCriteria = (req, res) => {
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Shop.EntityName} `;
     let FILTER = '';
+    let COLUMN_MAP = {
+        name: "name",
+        email: "email",
+        telephone: "telephone",
+        city: "city"
+    };
 
     let searchReq = new SearchRequest(req.body);
 
-    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, searchReq, res);
+    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
 };
 

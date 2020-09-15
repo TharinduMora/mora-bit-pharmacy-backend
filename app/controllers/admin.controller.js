@@ -53,13 +53,12 @@ exports.login = (req, res) => {
 
     dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName,req.body.password),(err,result)=>{
         if (err) {
-            if(err.kind !== 'not_found'){
+            if(err.kind === 'not_found'){
                 res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
                 return;
             }
             res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         }else if (result) {
-            console.log(result.data[0]);
             login(result.data[0]);
         }
     });
@@ -68,10 +67,10 @@ exports.login = (req, res) => {
         let admin = new Admin(loggedAdmin);
         admin.id = loggedAdmin.id;
         admin.sessionId = commonFunctions.getSessionId();
-        dbOperations.updateEntity(admin,Admin.EntityName,`id = ${admin.id}`,"id",Admin.updateRestrictedColumns,(err,result)=>{
+        dbOperations.updateEntity(admin,Admin.EntityName,`id = ${admin.id}`,admin.id,Admin.updateRestrictedColumns,(err,result)=>{
             if(result){
                 sessionStore.addAdminSession(admin.sessionId,admin);
-                res.send(ResponseFactory.getSuccessResponse({data:Admin.LoginResponse(admin)}))
+                res.status(200).send(ResponseFactory.getSuccessResponse({data:new Admin.LoginResponse(admin),message: 'Login Success'}))
             }else{
                 res.status(401).send(ResponseFactory.getErrorResponse({message: 'Login failed'}));
             }

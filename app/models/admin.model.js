@@ -1,5 +1,6 @@
 // constructor
 const Admin = function (admin) {
+    this.id = admin.id || 0;
     this.userName = admin.userName || null;
     this.password = admin.password || null;
     this.fullName = admin.fullName || null;
@@ -59,8 +60,11 @@ Admin.NamedQuery = {
     getAdminByUserName(userName){
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
     },
+    getAdminBySessionId(sessionId){
+        return `SELECT * FROM  ${Admin.EntityName} WHERE sessionId = '${sessionId}'`
+    },
     getAdminByUserNameAndPassword(userName,password){
-        return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName} AND password'`
+        return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
 }
 

@@ -1,6 +1,10 @@
 const dynamicResponse = require("../shared/dynamic.response");
 const payloadChecker = require('payload-validator');
+const sessionStore = require("./session.store")
 const {APP_ROLES} = require("../../app.role");
+const dbOperations = require("./database/db.operations");
+const Admin = require("../models/admin.model");
+const ResponseFactory = require("./dynamic.response.factory")
 
 exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
     if (!reqBody) {
@@ -17,21 +21,44 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
 
 exports.authValidator = (functionId) => {
     return (req, res, next) => {
-        req.admin = {
-            roleId: 1
-        };
-
-        let role = APP_ROLES["ROLE_" + req.admin.roleId];
-
-        if (!role) {
-            res.status(401).send({message: "Invalid Role Id : " + req.admin.roleId});
-            return;
+        const sessionId = req.header('sessionId');
+        if(sessionId === undefined){
+            res.status(401).send(ResponseFactory.getErrorResponse({message: 'SessionId undefined.'}));
+            return ;
+        }
+        if(sessionStore.getAdminSession(sessionId)){
+            req.admin = sessionStore.getAdminSession(sessionId);
+            validateUser(req,res,next);
+        }else{
+            dbOperations.getResultByQuery(Admin.NamedQuery.getAdminBySessionId(sessionId),(err,result)=>{
+                if (err) {
+                    if(err.kind === 'not_found'){
+                        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+                        return;
+                    }
+                    res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+                }else if (result) {
+                    const admin = result.data[0];
+                    sessionStore.addAdminSession(admin.sessionId,admin);
+                    req.admin = admin;
+                    validateUser(req,res,next);
+                }
+            })
         }
 
-        if (role.FUNCTIONS.includes(functionId)) {
-            next();
-        } else {
-            res.status(401).send({unauthorized: true});
+        function validateUser(req,res,next){
+            let role = APP_ROLES["ROLE_" + req.admin.roleId];
+
+            if (!role) {
+                res.status(401).send(ResponseFactory.getErrorResponse({message: "Invalid Role Id : " + req.admin.roleId}));
+                return;
+            }
+
+            if (role.FUNCTIONS.includes(functionId)) {
+                next();
+            } else {
+                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+            }
         }
     }
 };

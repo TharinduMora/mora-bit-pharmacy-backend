@@ -32,7 +32,8 @@ exports.create = (entityName, entityObject, result) => {
         }
 
         console.log("created : " + entityName + " ID: " + res.insertId);
-        result(null, {id: res.insertId, ...entityObject});
+        entityObject.id = res.insertId;
+        result(null, entityObject);
     });
 };
 

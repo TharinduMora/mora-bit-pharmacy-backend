@@ -40,7 +40,7 @@ app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
         return res.status(500).send(ResponseFactory.getErrorResponse({message: error || 'File uploaded failed'}));
     }
 });
-
+console.log(require("./app/shared/common.functions").getSessionId());
 
 app.use("/shop", require("./app/routes/shop.routes.js"));
 app.use("/admin", require("./app/routes/admin.routes.js"));

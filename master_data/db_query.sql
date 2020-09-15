@@ -21,7 +21,7 @@ CREATE TABLE shops
 CREATE TABLE admin
 (
     id        int          NOT NULL AUTO_INCREMENT,
-    shopId        int          DEFAULT 0 ,
+    shopId    int          DEFAULT 0,
     userName  varchar(255) NOT NULL,
     password  varchar(255) NOT NULL,
     fullName  varchar(255) DEFAULT NULL,
@@ -29,6 +29,7 @@ CREATE TABLE admin
     telephone varchar(255) DEFAULT NULL,
     address   varchar(255) DEFAULT NULL,
     city      varchar(255) DEFAULT NULL,
+    sessionId varchar(100) DEFAULT NULL,
     roleId    int          NOT NULL,
     adminType int          DEFAULT 2,
     status    int          DEFAULT 0,

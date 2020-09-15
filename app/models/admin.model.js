@@ -7,6 +7,7 @@ const Admin = function (admin) {
     this.telephone = admin.telephone || null;
     this.address = admin.address || null;
     this.city = admin.city || null;
+    this.sessionId = admin.sessionId || null;
     this.roleId = admin.roleId || 0;
     this.adminType = admin.adminType || 0;
     this.status = admin.status || 0;

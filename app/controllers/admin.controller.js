@@ -4,7 +4,8 @@ const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
 const ResponseFactory = require("../shared/dynamic.response.factory");
 const SearchRequest = require("../shared/search/SearchRequest");
-const mainConfig = require("../../app/config/main.config")
+const mainConfig = require("../../app/config/main.config");
+const appRoles = require("../../app.role").APP_ROLES;
 
 exports.create = (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
@@ -32,8 +33,8 @@ exports.create = (req, res) => {
             city: req.body.city
         });
 
-        admin.roleId = 1;
-        admin.adminType = mainConfig.ADMIN_TYPES.SHOP_ADMIN;
+        admin.roleId = appRoles.ROLE_1.ID;
+        admin.adminType = mainConfig.ADMIN_TYPES.SYSTEM_ADMIN;
         admin.status = mainConfig.SYSTEM_STATUS.CREATED;
 
         dbOperations.create(Admin.EntityName, admin, (err, data) => {

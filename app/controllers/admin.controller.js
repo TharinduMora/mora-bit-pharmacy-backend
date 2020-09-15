@@ -1,5 +1,6 @@
 const Admin = require("../models/admin.model");
 const commonFunctions = require("../shared/common.functions");
+const sessionStore = require("../shared/session.store");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
 const ResponseFactory = require("../shared/dynamic.response.factory");
@@ -43,6 +44,38 @@ exports.create = (req, res) => {
             else
                 res.send(ResponseFactory.getSuccessResponse({data: data, message: "Admin Created"}));
         });
+    }
+};
+
+exports.login = (req, res) => {
+    if (!commonFunctions.requestValidator(req.body, Admin.LOGIN_REQUEST, ["userName", "password"], false, res))
+        return;
+
+    dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName,req.body.password),(err,result)=>{
+        if (err) {
+            if(err.kind !== 'not_found'){
+                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
+                return;
+            }
+            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+        }else if (result) {
+            console.log(result.data[0]);
+            login(result.data[0]);
+        }
+    });
+
+    function login(loggedAdmin) {
+        let admin = new Admin(loggedAdmin);
+        admin.id = loggedAdmin.id;
+        admin.sessionId = commonFunctions.getSessionId();
+        dbOperations.updateEntity(admin,Admin.EntityName,`id = ${admin.id}`,"id",Admin.updateRestrictedColumns,(err,result)=>{
+            if(result){
+                sessionStore.addAdminSession(admin.sessionId,admin);
+                res.send(ResponseFactory.getSuccessResponse({data:Admin.LoginResponse(admin)}))
+            }else{
+                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Login failed'}));
+            }
+        })
     }
 };
 

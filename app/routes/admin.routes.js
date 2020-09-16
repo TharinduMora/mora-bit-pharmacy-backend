@@ -8,7 +8,7 @@ router.get('/', commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA
 
 router.get('/:adminId', commonFunctions.authValidator(appFunctions.VIEW_SHOP_DETAILS.ID), admin.findOne);
 
-router.post('/', commonFunctions.authValidator(appFunctions.CREATE_SHOP.ID), admin.create);
+router.post('/', admin.create);
 
 router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_SHOP.ID), admin.update);
 

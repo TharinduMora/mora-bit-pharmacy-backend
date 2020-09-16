@@ -1,5 +1,6 @@
 // const poolConnection = require("./db.pool");
 
+const ResponseFactory = require("../dynamic.response.factory");
 const ConnectionPool = require("./db.connection.pool.singleton");
 const poolConnection = ConnectionPool.getConnectionPool();
 
@@ -88,6 +89,23 @@ exports.getResultByQuery = (SELECT_SQL, result) => {
         result({kind: "not_found"}, null);
     });
 };
+
+exports.getResultByQueryPromise =  function(SELECT_SQL){
+    return new Promise((resolve, reject) => {
+        poolConnection.query(SELECT_SQL, (err, res) => {
+            if (err) {
+                resolve(ResponseFactory.getErrorResponse({message:err}))
+                return;
+            }
+            if (res.length) {
+                resolve(ResponseFactory.getSuccessResponse({data:res}));
+                return;
+            }
+            console.log(res);
+            resolve(ResponseFactory.getSuccessResponse({data:[]}));
+        });
+    });
+}
 
 exports.search = (SELECT_SQL, COUNT_SQL, result) => {
     poolConnection.query(SELECT_SQL, (err, res) => {

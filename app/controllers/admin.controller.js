@@ -1,7 +1,7 @@
 const Admin = require("../models/admin.model");
 const commonFunctions = require("../shared/common.functions");
 const sessionStore = require("../shared/session.store");
-const dbOperations = require("../shared/database/db.operations");
+const dbOperations = require("../shared/database/db.operations2");
 const searchTemplate = require("../shared/search/search.template");
 const ResponseFactory = require("../shared/dynamic.response.factory");
 const SearchRequest = require("../shared/search/SearchRequest");
@@ -12,13 +12,15 @@ exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
         return;
 
-    const userValidation = await dbOperations.getResultByQueryPromise(Admin.NamedQuery.getAdminByUserName(req.body.userName));
+    const userList = await dbOperations.getResultByQueryPromise(Admin.NamedQuery.getAdminByUserName(req.body.userName));
 
-    if (userValidation.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (userList.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+        return;
     }
-    if (userValidation.data.length > 0) {
+    if (userList.data.length > 0) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
+        return;
     }
 
     const admin = new Admin({
@@ -43,38 +45,63 @@ exports.create = async (req, res) => {
     });
 };
 
-exports.login = (req, res) => {
+exports.login = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, Admin.LOGIN_REQUEST, ["userName", "password"], false, res))
         return;
 
-    dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password), (err, result) => {
-        if (err) {
-            if (err.kind === 'not_found') {
-                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
-                return;
-            }
-            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-        } else if (result) {
-            login(result.data[0]);
-        }
-    });
+    const userList = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));
 
-    function login(loggedAdmin) {
-        let admin = new Admin(loggedAdmin);
-        admin.id = loggedAdmin.id;
-        admin.sessionId = commonFunctions.getSessionId();
-        dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns, (err, result) => {
-            if (result) {
-                sessionStore.addAdminSession(admin.sessionId, admin);
-                res.status(200).send(ResponseFactory.getSuccessResponse({
-                    data: new Admin.LoginResponse(admin),
-                    message: 'Login Success'
-                }))
-            } else {
-                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Login failed'}));
-            }
-        })
+    if (userList.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+        return;
     }
+    if (userList.data.length === 0) {
+        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
+        return;
+    }
+
+    // dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password), (err, result) => {
+    //     if (err) {
+    //         if (err.kind === 'not_found') {
+    //             res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
+    //             return;
+    //         }
+    //         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+    //     } else if (result) {
+    //         login(result.data[0]);
+    //     }
+    // });
+    let admin = new Admin(userList.data[0]);
+    admin.id = userList.data[0].id;
+    admin.sessionId = commonFunctions.getSessionId();
+    dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns, (err, result) => {
+        if (result) {
+            sessionStore.addAdminSession(admin.sessionId, admin);
+            res.status(200).send(ResponseFactory.getSuccessResponse({
+                data: new Admin.LoginResponse(admin),
+                message: 'Login Success'
+            }))
+        } else {
+            res.status(401).send(ResponseFactory.getErrorResponse({message: 'Login failed'}));
+        }
+    })
+
+    // function login(loggedAdmin) {
+    //     let admin = new Admin(loggedAdmin);
+    //     admin.id = loggedAdmin.id;
+    //     admin.sessionId = commonFunctions.getSessionId();
+    //     dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns, (err, result) => {
+    //         if (result) {
+    //             sessionStore.addAdminSession(admin.sessionId, admin);
+    //             res.status(200).send(ResponseFactory.getSuccessResponse({
+    //                 data: new Admin.LoginResponse(admin),
+    //                 message: 'Login Success'
+    //             }))
+    //         } else {
+    //             res.status(401).send(ResponseFactory.getErrorResponse({message: 'Login failed'}));
+    //         }
+    //     })
+    // }
 };
 
 exports.findOne = (req, res) => {

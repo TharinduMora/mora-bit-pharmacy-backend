@@ -1,25 +1,24 @@
-const dynamicResponse = require("../shared/dynamic.response");
 const payloadChecker = require('payload-validator');
 const sessionStore = require("./session.store")
 const {APP_ROLES} = require("../../app.role");
 const dbOperations = require("./database/db.operations");
 const Admin = require("../models/admin.model");
-const ResponseFactory = require("./dynamic.response.factory")
+const ResponseFactory = require("./dynamic.response.factory");
 
 exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
     if (!reqBody) {
-        res.status(400).send(dynamicResponse.error({message: "Content can not be empty!"}));
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "Content can not be empty!"}));
         return false;
     }
     const requestPayloadChecker = payloadChecker.validator(reqBody, api, mandatoryColumns, blankValues);
     if (!requestPayloadChecker.success) {
-        res.status(400).send(dynamicResponse.error({message: requestPayloadChecker.response.errorMessage}));
+        res.status(400).send(ResponseFactory.getErrorResponse({message: requestPayloadChecker.response.errorMessage}));
         return false;
     }
     return true;
 };
 
-exports.authValidator = (functionId) => {
+exports.authValidator =  (functionId) => {
     return (req, res, next) => {
         const sessionId = req.header('sessionId');
         if(sessionId === undefined){
@@ -30,7 +29,7 @@ exports.authValidator = (functionId) => {
             req.admin = sessionStore.getAdminSession(sessionId);
             validateUser(req,res,next);
         }else{
-            dbOperations.getResultByQuery(Admin.NamedQuery.getAdminBySessionId(sessionId),(err,result)=>{
+            dbOperations.getResultByQueryAsCallback(Admin.NamedQuery.getAdminBySessionId(sessionId),(err,result)=>{
                 if (err) {
                     if(err.kind === 'not_found'){
                         res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));

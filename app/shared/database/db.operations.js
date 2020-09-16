@@ -80,6 +80,20 @@ exports.getResultByQuery = function(SELECT_SQL){
     });
 }
 
+exports.getResultByQueryAsCallback = (SELECT_SQL, result) => {
+    poolConnection.query(SELECT_SQL, (err, res) => {
+        if (err) {
+            result(err, null);
+            return;
+        }
+        if (res.length) {
+            result(null, {data: res});
+            return;
+        }
+        result({kind: "not_found"}, null);
+    });
+};
+
 exports.runAsTransaction = (queryListArray, resultMapKey, result) => {
     const chain = transactionConnection.chain();
     chain.on('commit', function (data) {

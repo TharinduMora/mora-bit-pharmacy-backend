@@ -76,28 +76,24 @@ exports.findOne = (entityName, primaryKey, primaryId, result) => {
     });
 };
 
-exports.getResultByQuery = function(SELECT_SQL){
-    return new Promise((resolve, reject) => {
-        poolConnection.query(SELECT_SQL, (err, res) => {
-            if (err) {
-                console.log(err.sqlMessage);
-                resolve(ResponseFactory.getErrorResponse({message:err}))
-                return;
-            }
-            if (res.length) {
-                resolve(ResponseFactory.getSuccessResponse({data:res}));
-                return;
-            }
-            resolve(ResponseFactory.getSuccessResponse({data:[]}));
-        });
+exports.getResultByQuery = (SELECT_SQL, result) => {
+    poolConnection.query(SELECT_SQL, (err, res) => {
+        if (err) {
+            result(err, null);
+            return;
+        }
+        if (res.length) {
+            result(null, {data: res});
+            return;
+        }
+        result({kind: "not_found"}, null);
     });
-}
+};
 
 exports.getResultByQueryPromise =  function(SELECT_SQL){
     return new Promise((resolve, reject) => {
         poolConnection.query(SELECT_SQL, (err, res) => {
             if (err) {
-                console.log(err.sqlMessage);
                 resolve(ResponseFactory.getErrorResponse({message:err}))
                 return;
             }

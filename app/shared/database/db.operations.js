@@ -101,7 +101,6 @@ exports.getResultByQueryPromise =  function(SELECT_SQL){
                 resolve(ResponseFactory.getSuccessResponse({data:res}));
                 return;
             }
-            console.log(res);
             resolve(ResponseFactory.getSuccessResponse({data:[]}));
         });
     });

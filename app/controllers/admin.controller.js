@@ -14,47 +14,33 @@ exports.create = async (req, res) => {
 
     const userValidation = await dbOperations.getResultByQueryPromise(Admin.NamedQuery.getAdminByUserName(req.body.userName));
 
-    console.log('userValidation',userValidation)
-
     if (userValidation.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-    } else if (userValidation.data.length === 0) {
-        createNewAdmin();
+    }
+    if (userValidation.data.length > 0) {
+        res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
     }
 
-    // dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.userName),(err,result)=>{
-    //     if (err && err.kind !== 'not_found') {
-    //         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-    //     }
-    //     if (result) {
-    //         res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
-    //     } else {
-    //         createNewAdmin();
-    //     }
-    // });
+    const admin = new Admin({
+        userName: req.body.userName,
+        password: req.body.password,
+        fullName: req.body.fullName,
+        email: req.body.email,
+        telephone: req.body.telephone,
+        address: req.body.address,
+        city: req.body.city
+    });
 
-    function createNewAdmin() {
-        const admin = new Admin({
-            userName: req.body.userName,
-            password: req.body.password,
-            fullName: req.body.fullName,
-            email: req.body.email,
-            telephone: req.body.telephone,
-            address: req.body.address,
-            city: req.body.city
-        });
+    admin.roleId = appRoles.ROLE_1.ID;
+    admin.adminType = mainConfig.ADMIN_TYPES.SYSTEM_ADMIN;
+    admin.status = mainConfig.SYSTEM_STATUS.CREATED;
 
-        admin.roleId = appRoles.ROLE_1.ID;
-        admin.adminType = mainConfig.ADMIN_TYPES.SYSTEM_ADMIN;
-        admin.status = mainConfig.SYSTEM_STATUS.CREATED;
-
-        dbOperations.create(Admin.EntityName, admin, (err, data) => {
-            if (err)
-                res.status(500).send(ResponseFactory.getErrorResponse({message: err.message || "Some error occurred while creating the Admin."}));
-            else
-                res.send(ResponseFactory.getSuccessResponse({data: data, message: "Admin Created"}));
-        });
-    }
+    dbOperations.create(Admin.EntityName, admin, (err, data) => {
+        if (err)
+            res.status(500).send(ResponseFactory.getErrorResponse({message: err.message || "Some error occurred while creating the Admin."}));
+        else
+            res.send(ResponseFactory.getSuccessResponse({data: data, message: "Admin Created"}));
+    });
 };
 
 exports.login = (req, res) => {

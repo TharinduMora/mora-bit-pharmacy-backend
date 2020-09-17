@@ -39,7 +39,7 @@ exports.create = async (req, res) => {
 
     const creationResponse = await dbOperations.create(Admin.EntityName, admin);
 
-    if(creationResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR){
+    if (creationResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Admin."}));
         return;
     }
@@ -68,11 +68,11 @@ exports.login = async (req, res) => {
 
     const updateResponse = dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns);
 
-    if(updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR){
+    if (updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
-        return ;
+        return;
     }
-    if(updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND){
+    if (updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }
@@ -86,11 +86,11 @@ exports.login = async (req, res) => {
 exports.findOne = async (req, res) => {
     const findResponse = dbOperations.findOne(Admin.EntityName, "id", req.params.adminId);
 
-    if(findResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR){
+    if (findResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: findResponse.message || "Some error occurred while retrieving Admin with Id:" + req.params.adminId}));
         return;
     }
-    if(findResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND){
+    if (findResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }
@@ -110,11 +110,11 @@ exports.update = async (req, res) => {
 
     const updateResponse = await dbOperations.updateEntity(new Admin(updatingAdmin), Admin.EntityName, updateCondition, req.body.id, Admin.updateRestrictedColumns);
 
-    if(updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR){
+    if (updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Admin Updating failed with Id:" + req.body.id}));
-        return ;
+        return;
     }
-    if(updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND){
+    if (updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }
@@ -158,7 +158,8 @@ exports.transTest = (req, res) => {
     let transactionalQueryList = [];
 
     const admin = new Admin({
-        name: "Test",
+        userName: "Test",
+        password: "Test",
         email: "Test Trans",
         telephone: "Test",
         address: "Test",
@@ -171,15 +172,13 @@ exports.transTest = (req, res) => {
 
     transactionalQueryList.push(AdminInsertQuery, AdminUpdateQuery);
 
-    const resultMapKey = 'resMap_';
-
-    dbOperations.runAsTransaction(transactionalQueryList, resultMapKey, (err, result) => {
+    dbOperations.executeAsTransaction(transactionalQueryList, 'resMap_', (err, result) => {
         if (err) {
             res.status(500).send(err);
         } else {
-            if (result[resultMapKey + 2]) {
+            if (result['resMap_' + 2]) {
                 let newAdmin = {...admin};
-                newAdmin.id = result[1].insertId;
+                newAdmin.id = result['resMap_' + 2].insertId;
                 res.send(newAdmin);
                 return;
             }

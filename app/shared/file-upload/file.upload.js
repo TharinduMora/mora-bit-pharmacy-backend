@@ -1,4 +1,4 @@
-const multer  = require('multer');
+const multer = require('multer');
 const path = require("path");
 const appConfig = require("../../../app.config")
 
@@ -17,4 +17,4 @@ const fileFilter = (req, file, cb) => {
         cb(null, false);
     }
 };
-exports.upload = multer({ storage: storage, fileFilter: fileFilter })
+exports.upload = multer({storage: storage, fileFilter: fileFilter})

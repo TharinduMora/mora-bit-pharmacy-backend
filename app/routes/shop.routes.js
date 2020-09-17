@@ -12,7 +12,7 @@ router.post('/', commonFunctions.authValidator(appFunctions.CREATE_SHOP.ID), sho
 
 router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_SHOP.ID), shops.update);
 
-router.post('/findByCriteria',commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA.ID), shops.findByCriteria);
+router.post('/findByCriteria', commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA.ID), shops.findByCriteria);
 
 router.post('/transTest', shops.transTest);
 

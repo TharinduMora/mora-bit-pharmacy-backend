@@ -132,7 +132,7 @@ function appendCondition(key, operator, value, where) {
 }
 
 exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res) => {
-    searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP,searchReq, (err, searchResult) => {
+    searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, (err, searchResult) => {
         if (err) {
             if (err.kind === "not_found") {
                 res.status(204).send();

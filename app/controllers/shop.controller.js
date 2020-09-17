@@ -111,7 +111,7 @@ exports.transTest = (req, res) => {
 
     const resultMapKey = 'resMap_';
 
-    dbOperations.runAsTransaction(transactionalQueryList, resultMapKey, (err, result) => {
+    dbOperations.executeAsTransaction(transactionalQueryList, resultMapKey, (err, result) => {
         if (err) {
             res.status(500).send(err);
         } else {

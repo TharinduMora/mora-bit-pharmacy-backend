@@ -12,7 +12,7 @@ router.post('/', admin.create);
 
 router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_SHOP.ID), admin.update);
 
-router.post('/findByCriteria',commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA.ID), admin.findByCriteria);
+router.post('/findByCriteria', commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA.ID), admin.findByCriteria);
 
 router.post('/transTest', admin.transTest);
 

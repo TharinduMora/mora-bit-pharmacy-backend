@@ -6,7 +6,7 @@ dbConfig = appConfig.DATABASE;
 
 const trCon = transaction({
     // mysql driver set
-    connection: [mysql.createConnection,{
+    connection: [mysql.createConnection, {
         host: dbConfig.HOST,
         user: dbConfig.USER,
         password: dbConfig.PASSWORD,
@@ -14,7 +14,7 @@ const trCon = transaction({
     }],
     dynamicConnection: 32,
     idleConnectionCutoffTime: 1000,
-    timeout:600
+    timeout: 600
 });
 
 let transactionConnection = null
@@ -26,7 +26,7 @@ class DBTransactionConnectionSingleton {
     }
 
     static getTransactionConnection() {
-        if(!transactionConnection) {
+        if (!transactionConnection) {
             transactionConnection = new DBTransactionConnectionSingleton()
         }
         return transactionConnection.trCon;

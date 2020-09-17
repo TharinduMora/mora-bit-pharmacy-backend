@@ -36,19 +36,19 @@ class UploadSuccessResponse {
 
 class ResponseFactory {
 
-    getErrorResponse(data){
+    getErrorResponse(data) {
         return new ErrorResponse(data);
     }
 
-    getSuccessResponse(data){
+    getSuccessResponse(data) {
         return new SuccessResponse(data);
     }
 
-    getSearchResponse(data){
+    getSearchResponse(data) {
         return new SearchResponse(data);
     }
 
-    getUploadSuccessResponse(data){
+    getUploadSuccessResponse(data) {
         return new UploadSuccessResponse(data);
     }
 }

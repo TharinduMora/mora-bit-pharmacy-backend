@@ -18,34 +18,34 @@ exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues
     return true;
 };
 
-exports.authValidator =  (functionId) => {
+exports.authValidator = (functionId) => {
     return (req, res, next) => {
         const sessionId = req.header('sessionId');
-        if(sessionId === undefined){
+        if (sessionId === undefined) {
             res.status(401).send(ResponseFactory.getErrorResponse({message: 'SessionId undefined.'}));
-            return ;
+            return;
         }
-        if(sessionStore.getAdminSession(sessionId)){
+        if (sessionStore.getAdminSession(sessionId)) {
             req.admin = sessionStore.getAdminSession(sessionId);
-            validateUser(req,res,next);
-        }else{
-            dbOperations.getResultByQueryAsCallback(Admin.NamedQuery.getAdminBySessionId(sessionId),(err,result)=>{
+            validateUser(req, res, next);
+        } else {
+            dbOperations.getResultByQueryAsCallback(Admin.NamedQuery.getAdminBySessionId(sessionId), (err, result) => {
                 if (err) {
-                    if(err.kind === 'not_found'){
+                    if (err.kind === 'not_found') {
                         res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
                         return;
                     }
                     res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-                }else if (result) {
+                } else if (result) {
                     const admin = result.data[0];
-                    sessionStore.addAdminSession(admin.sessionId,admin);
+                    sessionStore.addAdminSession(admin.sessionId, admin);
                     req.admin = admin;
-                    validateUser(req,res,next);
+                    validateUser(req, res, next);
                 }
             })
         }
 
-        function validateUser(req,res,next){
+        function validateUser(req, res, next) {
             let role = APP_ROLES["ROLE_" + req.admin.roleId];
 
             if (!role) {
@@ -67,7 +67,7 @@ exports.getSessionId = function () {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     const charactersLength = characters.length;
     for (let i = 0; i < 36; i++) {
-        if(i === 18){
+        if (i === 18) {
             result += new Date().getTime();
         }
         result += characters.charAt(Math.floor(Math.random() * charactersLength));

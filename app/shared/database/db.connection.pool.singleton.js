@@ -4,7 +4,7 @@ const appConfig = require("../../../app.config");
 dbConfig = appConfig.DATABASE;
 
 const createdPool = mysql.createPool({
-    connectionLimit:dbConfig.CONNECTION_LIMIT,
+    connectionLimit: dbConfig.CONNECTION_LIMIT,
     host: dbConfig.HOST,
     user: dbConfig.USER,
     password: dbConfig.PASSWORD,
@@ -20,7 +20,7 @@ class DBConnectionPoolClass {
     }
 
     static getConnectionPool() {
-        if(!connectionPool) {
+        if (!connectionPool) {
             connectionPool = new DBConnectionPoolClass()
         }
         return connectionPool.createdPool;

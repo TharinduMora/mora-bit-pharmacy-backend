@@ -43,33 +43,33 @@ Admin.UPDATE_API = {
     adminType: 0
 };
 
-Admin.LoginResponse = function(admin){
-    this.userName = admin.userName ;
-    this.fullName = admin.fullName ;
-    this.email = admin.email ;
-    this.telephone = admin.telephone ;
-    this.address = admin.address ;
-    this.city = admin.city ;
-    this.sessionId = admin.sessionId ;
-    this.roleId = admin.roleId ;
-    this.adminType = admin.adminType ;
+Admin.LoginResponse = function (admin) {
+    this.userName = admin.userName;
+    this.fullName = admin.fullName;
+    this.email = admin.email;
+    this.telephone = admin.telephone;
+    this.address = admin.address;
+    this.city = admin.city;
+    this.sessionId = admin.sessionId;
+    this.roleId = admin.roleId;
+    this.adminType = admin.adminType;
     this.status = admin.status;
 };
 
 Admin.NamedQuery = {
-    getAdminByUserName(userName){
+    getAdminByUserName(userName) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
     },
-    getAdminBySessionId(sessionId){
+    getAdminBySessionId(sessionId) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE sessionId = '${sessionId}'`
     },
-    getAdminByUserNameAndPassword(userName,password){
+    getAdminByUserNameAndPassword(userName, password) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
 }
 
 Admin.creationMandatoryColumns = ["userName", "password", "email", "roleId"];
 Admin.updateMandatoryColumns = ["id"];
-Admin.updateRestrictedColumns = ["id", "email","userName", "password", "email"];
+Admin.updateRestrictedColumns = ["id", "email", "userName", "password", "email"];
 
 module.exports = Admin;

@@ -6,14 +6,15 @@ const fs = require("fs");
 const fileUploader = require("./app/shared/file-upload/file.upload");
 const appConfig = require("./app.config");
 const ResponseFactory = require("./app/APIs/response/dynamic.response.factory");
+const logger = require('./app/shared/logger/logger.module')("server.js");
 
 const app = express();
 
 fs.mkdir(path.join(__dirname, appConfig.UPLOAD_FILES.DIR_NAME), {recursive: true}, function (err) {
     if (err) {
-        console.log(err)
+        logger.error(err);
     } else {
-        console.log("'Uploads' directory successfully created.")
+        logger.info("'Uploads' directory successfully created.");
     }
 });
 
@@ -40,11 +41,15 @@ app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
         return res.status(500).send(ResponseFactory.getErrorResponse({message: error || 'File uploaded failed'}));
     }
 });
-console.log(require("./app/shared/common.functions").getSessionId());
+
+app.use("/", (req, res, next) => {
+    logger.http("[" + req.method + "] " + req.url);
+    next();
+});
 
 app.use("/shop", require("./app/routes/shop.routes.js"));
 app.use("/admin", require("./app/routes/admin.routes.js"));
 
 app.listen(appConfig.SERVER.PORT, () => {
-    console.log(`Server is running on port ${appConfig.SERVER.PORT}.`);
+    logger.info(`${appConfig.APP_NAME} started on port ${appConfig.SERVER.PORT}`);
 });

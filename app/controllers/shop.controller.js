@@ -2,7 +2,7 @@ const Shop = require("../models/shop.model");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
-const ResponseFactory = require("../shared/dynamic.response.factory");
+const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const SearchRequest = require("../shared/search/SearchRequest");
 
 exports.create = (req, res) => {

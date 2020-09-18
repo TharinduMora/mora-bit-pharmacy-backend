@@ -1,5 +1,5 @@
 const ConnectionPoolClass = require("../database/db.connection.pool.singleton");
-const ResponseFactory = require("../../shared/dynamic.response.factory");
+const ResponseFactory = require("../../APIs/response/dynamic.response.factory");
 
 const connectionPool = ConnectionPoolClass.getConnectionPool();
 

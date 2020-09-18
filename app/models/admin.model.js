@@ -16,46 +16,6 @@ const Admin = function (admin) {
 
 Admin.EntityName = "admin";
 
-Admin.CREATE_API = {
-    userName: "",
-    password: "",
-    fullName: "",
-    email: "",
-    telephone: "",
-    address: "",
-    city: "",
-    roleId: 0,
-    adminType: 0
-};
-
-Admin.LOGIN_REQUEST = {
-    userName: "",
-    password: ""
-};
-
-Admin.UPDATE_API = {
-    id: 0,
-    fullName: "",
-    telephone: "",
-    address: "",
-    city: "",
-    roleId: 0,
-    adminType: 0
-};
-
-Admin.LoginResponse = function (admin) {
-    this.userName = admin.userName;
-    this.fullName = admin.fullName;
-    this.email = admin.email;
-    this.telephone = admin.telephone;
-    this.address = admin.address;
-    this.city = admin.city;
-    this.sessionId = admin.sessionId;
-    this.roleId = admin.roleId;
-    this.adminType = admin.adminType;
-    this.status = admin.status;
-};
-
 Admin.NamedQuery = {
     getAdminByUserName(userName) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
@@ -66,7 +26,7 @@ Admin.NamedQuery = {
     getAdminByUserNameAndPassword(userName, password) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
-}
+};
 
 Admin.creationMandatoryColumns = ["userName", "password", "email", "roleId"];
 Admin.updateMandatoryColumns = ["id"];

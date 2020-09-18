@@ -5,7 +5,7 @@ const fs = require("fs");
 
 const fileUploader = require("./app/shared/file-upload/file.upload");
 const appConfig = require("./app.config");
-const ResponseFactory = require("./app/shared/dynamic.response.factory");
+const ResponseFactory = require("./app/APIs/response/dynamic.response.factory");
 
 const app = express();
 

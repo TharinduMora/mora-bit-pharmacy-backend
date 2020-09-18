@@ -1,4 +1,4 @@
-module.exports = {
+module.exports ={
 
     DATABASE: {
         CONNECTION_LIMIT: 100,

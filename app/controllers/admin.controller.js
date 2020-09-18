@@ -3,22 +3,24 @@ const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const dbQueryGenFunctions = require("../shared/database/db.query.gen.function");
 const searchTemplate = require("../shared/search/search.template");
-const ResponseFactory = require("../shared/dynamic.response.factory");
+const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const SearchRequest = require("../shared/search/SearchRequest");
 const mainConfig = require("../../app/config/main.config");
 const appRoles = require("../../app.role").APP_ROLES;
+const ApiRequest = require("../APIs/request/api.request");
+const AdminApiResponse = require("../APIs/response/admin.api.response");
 
 exports.create = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
+    if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
         return;
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.userName));
 
-    if (ResultResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         return;
     }
-    if (ResultResponse.data) {
+    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SUCCESS && ResultResponse.data.length > 0) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
         return;
     }
@@ -39,25 +41,27 @@ exports.create = async (req, res) => {
 
     const creationResponse = await dbOperations.create(Admin.EntityName, admin);
 
-    if (creationResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (creationResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Admin."}));
         return;
     }
-    res.send(ResponseFactory.getSuccessResponse({data: creationResponse.data, message: "Admin Created"}));
-
+    res.send(ResponseFactory.getSuccessResponse({
+        data: AdminApiResponse.AdminCreationResponse(creationResponse.data),
+        message: "Admin Created"
+    }));
 };
 
 exports.login = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, Admin.LOGIN_REQUEST, ["userName", "password"], false, res))
+    if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.LOGIN_REQUEST, ["userName", "password"], false, res))
         return;
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));
 
-    if (ResultResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         return;
     }
-    if (ResultResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
+    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
         res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
         return;
     }
@@ -68,17 +72,18 @@ exports.login = async (req, res) => {
 
     const updateResponse = dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns);
 
-    if (updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
         return;
     }
-    if (updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
+    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }
 
     res.status(200).send(ResponseFactory.getSuccessResponse({
-        data: new Admin.LoginResponse(admin),
+        // data: new Admin.LoginResponse(admin),
+        data: AdminApiResponse.AdminLoginResponse(admin),
         message: 'Login Success'
     }))
 };
@@ -90,7 +95,7 @@ exports.findOne = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: findResponse.message || "Some error occurred while retrieving Admin with Id:" + req.params.adminId}));
         return;
     }
-    if (findResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
+    if (findResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }
@@ -101,7 +106,7 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
 
     // Validate the Request
-    if (!commonFunctions.requestValidator(req.body, Admin.UPDATE_API, Admin.updateMandatoryColumns, false, res))
+    if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.UPDATE_API, Admin.updateMandatoryColumns, false, res))
         return;
 
     // Create Update Condition
@@ -110,11 +115,11 @@ exports.update = async (req, res) => {
 
     const updateResponse = await dbOperations.updateEntity(new Admin(updatingAdmin), Admin.EntityName, updateCondition, req.body.id, Admin.updateRestrictedColumns);
 
-    if (updateResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Admin Updating failed with Id:" + req.body.id}));
         return;
     }
-    if (updateResponse.id === mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND) {
+    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
         res.status(204).send();
         return;
     }

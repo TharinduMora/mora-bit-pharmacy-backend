@@ -3,7 +3,7 @@ const sessionStore = require("./session.store")
 const {APP_ROLES} = require("../../app.role");
 const dbOperations = require("./database/db.operations");
 const Admin = require("../models/admin.model");
-const ResponseFactory = require("./dynamic.response.factory");
+const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 
 exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
     if (!reqBody) {

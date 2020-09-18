@@ -1,7 +1,9 @@
 module.exports = {
 
-    DB_RESPONSE_IDS: {
-        DATA_NOT_FOUND: -1,
+    DB_RESPONSE_STATUS: {
+        SQL_ERROR: 1,
+        DATA_NOT_FOUND: 2,
+        SUCCESS: 3,
     },
     RESPONSE_STATUS: {
         RESPONSE_SUCCESS: 1,

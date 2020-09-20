@@ -7,7 +7,7 @@ module.exports = {
         HOST: "localhost",
         USER: "root",
         PASSWORD: "password",
-        DB: "mok"
+        DB: "pharmacy-db"
     },
 
     SERVER: {

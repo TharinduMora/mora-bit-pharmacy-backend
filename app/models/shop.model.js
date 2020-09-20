@@ -1,31 +1,21 @@
 // constructor
 const Shop = function (shop) {
-    this.name = shop.name;
-    this.email = shop.email;
-    this.telephone = shop.telephone;
-    this.address = shop.address;
-    this.city = shop.city;
+    this.id = shop.id || 0;
+    this.status = shop.id || 0;
+    this.name = shop.name || null;
+    this.email = shop.email || null;
+    this.description = shop.description || null;
+    this.image = shop.image || null;
+    this.telephone = shop.telephone || null;
+    this.address = shop.address || null;
+    this.city = shop.city || null;
+    this.longitude = shop.longitude || 0.0;
+    this.latitude = shop.latitude || 0.0;
 };
 
-Shop.EntityName = "shops";
+Shop.EntityName = "shop";
 
-Shop.CREATE_API = {
-    name: "",
-    email: "",
-    telephone: "",
-    address: "",
-    city: ""
-};
-
-Shop.UPDATE_API = {
-    id: 0,
-    name: "",
-    telephone: "",
-    address: "",
-    city: ""
-};
-
-Shop.creationMandatoryColumns = ["email", "telephone"];
+Shop.creationMandatoryColumns = ["name","email", "telephone"];
 Shop.updateMandatoryColumns = ["id"];
 Shop.updateRestrictedColumns = ["id", "email"];
 

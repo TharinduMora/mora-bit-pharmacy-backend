@@ -9,7 +9,8 @@ class AdminApiResponse {
         this.city = admin.city;
         this.sessionId = admin.sessionId;
         this.roleId = admin.roleId;
-        this.adminType = admin.adminType;
+        this.shopId = admin.shopId;
+        this.systemAdmin = admin.systemAdmin;
         this.status = admin.status;
         return this;
     };
@@ -23,7 +24,7 @@ class AdminApiResponse {
         this.address = admin.address;
         this.city = admin.city;
         this.roleId = admin.roleId;
-        this.adminType = admin.adminType;
+        this.shopId = admin.shopId;
         this.status = admin.status;
         return this;
     };

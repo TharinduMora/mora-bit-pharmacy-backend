@@ -1,6 +1,8 @@
 // constructor
 const Admin = function (admin) {
     this.id = admin.id || 0;
+    this.roleId = admin.roleId || 0;
+    this.shopId = admin.shopId || 0;
     this.userName = admin.userName || null;
     this.password = admin.password || null;
     this.fullName = admin.fullName || null;
@@ -9,9 +11,8 @@ const Admin = function (admin) {
     this.address = admin.address || null;
     this.city = admin.city || null;
     this.sessionId = admin.sessionId || null;
-    this.roleId = admin.roleId || 0;
-    this.adminType = admin.adminType || 0;
     this.status = admin.status || 0;
+    this.systemAdmin = admin.systemAdmin || false
 };
 
 Admin.EntityName = "admin";
@@ -28,7 +29,7 @@ Admin.NamedQuery = {
     }
 };
 
-Admin.creationMandatoryColumns = ["userName", "password", "email", "roleId"];
+Admin.creationMandatoryColumns = ["userName", "password", "email","shopId"];
 Admin.updateMandatoryColumns = ["id"];
 Admin.updateRestrictedColumns = ["id", "email", "userName", "password", "email"];
 

@@ -11,6 +11,7 @@ const ApiRequest = require("../APIs/request/api.request");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const AdminApiResponse = require("../APIs/response/admin.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
+const sessionStore = require("../shared/session.store");
 
 exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
@@ -37,8 +38,9 @@ exports.create = async (req, res) => {
         city: req.body.city
     });
 
+    admin.systemAdmin = false;
+    admin.shopId = req.body.shopId;
     admin.roleId = appRoles.ROLE_1.ID;
-    admin.adminType = mainConfig.ADMIN_TYPES.SYSTEM_ADMIN;
     admin.status = mainConfig.SYSTEM_STATUS.CREATED;
 
     const creationResponse = await dbOperations.create(Admin.EntityName, admin);
@@ -82,6 +84,8 @@ exports.login = async (req, res) => {
         res.status(204).send();
         return;
     }
+
+    sessionStore.addAdminSession(admin.sessionId,AdminApiResponse.AdminLoginResponse(admin));
 
     res.status(200).send(ResponseFactory.getSuccessResponse({
         // data: new Admin.LoginResponse(admin),

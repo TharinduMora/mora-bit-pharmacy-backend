@@ -1,6 +1,6 @@
 const payloadChecker = require('payload-validator');
 const sessionStore = require("./session.store")
-const {APP_ROLES} = require("../../app.role");
+const {APP_ROLES} = require("../../app/config/app.role");
 const dbOperations = require("./database/db.operations");
 const Admin = require("../models/admin.model");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");

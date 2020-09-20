@@ -1,4 +1,4 @@
-const appConfig = require("../../../app.config");
+const appConfig = require("../../config/app.config");
 
 const SearchRequest = function (req) {
     this.offset = req.offset || 0;

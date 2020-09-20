@@ -3,12 +3,14 @@ const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const dbQueryGenFunctions = require("../shared/database/db.query.gen.function");
 const searchTemplate = require("../shared/search/search.template");
-const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const SearchRequest = require("../shared/search/SearchRequest");
 const mainConfig = require("../../app/config/main.config");
-const appRoles = require("../../app.role").APP_ROLES;
+const appRoles = require("../../app/config/app.role").APP_ROLES;
+
 const ApiRequest = require("../APIs/request/api.request");
+const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const AdminApiResponse = require("../APIs/response/admin.api.response");
+const DbResponses = require("../APIs/response/db.response.factory");
 
 exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
@@ -16,11 +18,11 @@ exports.create = async (req, res) => {
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.userName));
 
-    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
+    if (DbResponses.isSqlErrorResponse(ResultResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         return;
     }
-    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SUCCESS && ResultResponse.data.length > 0) {
+    if (DbResponses.isSuccessResponse(ResultResponse.status) && ResultResponse.data.length > 0) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
         return;
     }
@@ -41,7 +43,7 @@ exports.create = async (req, res) => {
 
     const creationResponse = await dbOperations.create(Admin.EntityName, admin);
 
-    if (creationResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
+    if (DbResponses.isSqlErrorResponse(creationResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Admin."}));
         return;
     }
@@ -57,11 +59,11 @@ exports.login = async (req, res) => {
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));
 
-    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
+    if (DbResponses.isSqlErrorResponse(ResultResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
         return;
     }
-    if (ResultResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
+    if (DbResponses.isDataNotFoundResponse(ResultResponse.status)) {
         res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
         return;
     }
@@ -72,11 +74,11 @@ exports.login = async (req, res) => {
 
     const updateResponse = dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns);
 
-    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
+    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
         return;
     }
-    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
+    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
         res.status(204).send();
         return;
     }
@@ -91,11 +93,11 @@ exports.login = async (req, res) => {
 exports.findOne = async (req, res) => {
     const findResponse = dbOperations.findOne(Admin.EntityName, "id", req.params.adminId);
 
-    if (findResponse.status === mainConfig.RESPONSE_STATUS.RESPONSE_ERROR) {
+    if (DbResponses.isSqlErrorResponse(findResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: findResponse.message || "Some error occurred while retrieving Admin with Id:" + req.params.adminId}));
         return;
     }
-    if (findResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
+    if (DbResponses.isDataNotFoundResponse(findResponse.status)) {
         res.status(204).send();
         return;
     }
@@ -115,11 +117,11 @@ exports.update = async (req, res) => {
 
     const updateResponse = await dbOperations.updateEntity(new Admin(updatingAdmin), Admin.EntityName, updateCondition, req.body.id, Admin.updateRestrictedColumns);
 
-    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.SQL_ERROR) {
+    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Admin Updating failed with Id:" + req.body.id}));
         return;
     }
-    if (updateResponse.status === mainConfig.DB_RESPONSE_STATUS.DATA_NOT_FOUND) {
+    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
         res.status(204).send();
         return;
     }

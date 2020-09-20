@@ -1,5 +1,5 @@
 const mysql = require("mysql");
-const appConfig = require("../../../app.config");
+const appConfig = require("../../config/app.config");
 const transaction = require('node-mysql-transaction');
 
 dbConfig = appConfig.DATABASE;

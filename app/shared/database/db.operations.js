@@ -1,5 +1,3 @@
-const mainConfig = require("../../config/main.config");
-const ResponseFactory = require("../../APIs/response/dynamic.response.factory");
 const DBResponseFactory = require("../../APIs/response/db.response.factory");
 const ConnectionPool = require("./db.connection.pool.singleton");
 const queryGenFunctions = require("./db.query.gen.function");

@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require("fs");
 
 const fileUploader = require("./app/shared/file-upload/file.upload");
-const appConfig = require("./app.config");
+const appConfig = require("./app/config/app.config");
 const ResponseFactory = require("./app/APIs/response/dynamic.response.factory");
 const logger = require('./app/shared/logger/logger.module')("server.js");
 
@@ -44,6 +44,7 @@ app.post('/upload', fileUploader.upload.single('image'), (req, res, next) => {
 
 app.use("/", (req, res, next) => {
     logger.http("[" + req.method + "] " + req.url);
+    // JSON.stringify(req.body)
     next();
 });
 

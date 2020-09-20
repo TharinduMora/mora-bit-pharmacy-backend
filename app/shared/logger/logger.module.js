@@ -1,13 +1,13 @@
 const {createLogger, format, transports} = require('winston');
 require('winston-daily-rotate-file');
-const appConfig = require("../../../app.config");
+const appConfig = require("../../config/app.config");
 const {printf} = format;
 
 const loggerFormat = printf(({level, message, timestamp, fileName}) => {
     if (level === 'http') {
-        return `[${level}] [${timestamp}] : ${message}`;
+        return `[${level.toUpperCase()}] [${timestamp}] : ${message}`;
     }
-    return `[${level}] [${timestamp}] ${fileName} : ${message}`;
+    return `[${level.toUpperCase()}] [${timestamp}] ${fileName} : ${message}`;
 });
 
 const transport = (fileName, level, loggerFormat) => new transports.DailyRotateFile({
@@ -39,7 +39,7 @@ const logger = function (fileName) {
                 )
             }),
             transport("app-error", 'error'),
-            transport("app-combined", 'http')
+            transport("app", 'http')
         ]
     });
 };

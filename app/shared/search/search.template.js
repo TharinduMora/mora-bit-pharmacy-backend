@@ -7,7 +7,8 @@ function dataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, searchRequest, result) {
     SELECT_SQL = SELECT_SQL + generateWhere(searchRequest, COLUMN_MAP) + FILTER + generateLimit(searchRequest);
     connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
-            result(null, err);
+            result(err, null);
+            // result(null, err);
             return;
         }
         if (res.length) {
@@ -24,11 +25,11 @@ function searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReques
 
     connectionPool.query(SELECT_SQL, (err, res) => {
         if (err) {
-            result(null, err);
+            result(err, null);
         } else {
             connectionPool.query(COUNT_SQL, (err2, res2) => {
                 if (err2) {
-                    result(null, err2);
+                    result(err2, null);
                     return;
                 }
                 if (res2.length) {
@@ -47,7 +48,7 @@ function generateWhere(searchRequest, COLUMN_MAP) {
     if (searchRequest.searchKeys != null && searchRequest.searchKeys.length > 0) {
         for (let i = 0; i < searchRequest.searchKeys.length; i++) {
             if (COLUMN_MAP[searchRequest.searchKeys[i]]) {
-                conditions = appendCondition(searchRequest.searchKeys[i], searchRequest.operators[i], searchRequest.values[i], conditions);
+                conditions = appendCondition(COLUMN_MAP[searchRequest.searchKeys[i]], searchRequest.operators[i], searchRequest.values[i], conditions);
             }
         }
     }
@@ -64,16 +65,15 @@ function appendCondition(key, operator, value, where) {
     switch (operator) {
         case "=":
         case "eq": {
-            where = where + ` AND ${key} = ${value}`;
-            if (value.constructor === Number) {
+            if (value.constructor === Number) {s
                 where = where + ` AND ${key} = ${value}`;
             } else if (value.constructor === String) {
                 if (value === "true" || value === "false")
                     where = where + ` AND ${key} IS ${value}`;
                 else
-                    where = where + ` AND ${key} = ${value}`;
+                    where = where + ` AND ${key} = '${value}'`;
             } else {
-                where = where + ` AND ${key} = ${value}`;
+                where = where + ` AND ${key} = '${value}'`;
             }
             break;
         }

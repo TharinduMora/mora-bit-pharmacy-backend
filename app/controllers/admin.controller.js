@@ -146,7 +146,7 @@ exports.findByCriteria = (req, res) => {
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Admin.EntityName} `;
     let FILTER = '';
     let COLUMN_MAP = {
-        name: "name",
+        userName: "userName",
         email: "email",
         telephone: "telephone",
         city: "city"
@@ -155,7 +155,7 @@ exports.findByCriteria = (req, res) => {
     let searchReq = new SearchRequest(req.body);
 
     searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
-    // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, filter, searchReq, res);
+    // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER,COLUMN_MAP, searchReq, res);
 };
 
 exports.transTest = (req, res) => {

@@ -1,6 +1,9 @@
 const Shop = require("../models/shop.model");
+const Admin = require("../models/admin.model");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
+const dbTransaction = require("../shared/database/db.transaction.chain");
+const dbQueryGen = require("../shared/database/db.query.gen.function")
 const searchTemplate = require("../shared/search/search.template");
 const SearchRequest = require("../shared/search/SearchRequest");
 const mainConfig = require("../../app/config/main.config");
@@ -16,20 +19,81 @@ exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
 
+    const AdminSearchResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.admin.userName));
+
+    if (DbResponses.isSqlErrorResponse(AdminSearchResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+        return;
+    }
+    if (DbResponses.isSuccessResponse(AdminSearchResponse.status) && AdminSearchResponse.data.length > 0) {
+        logger.info("User Name already exist. username: " + req.body.admin.userName);
+        res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
+        return;
+    }
+
     const shop = new Shop(req.body);
     shop.status = mainConfig.SYSTEM_STATUS.CREATED;
 
-    const creationResponse = await dbOperations.create(Shop.EntityName, shop);
+    const admin = new Admin(req.body);
+    admin.userName = req.body.admin.userName;
+    admin.password = req.body.admin.password;
+    admin.fullName = req.body.admin.fullName;
 
-    if (DbResponses.isSqlErrorResponse(creationResponse.status)) {
-        res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Shop."}));
+    const transactionChain = dbTransaction.getTransactionChain();
+
+    const createShopQueryObj = dbQueryGen.getInsertQuery(1,Shop.EntityName,shop);
+    const shopResponse = await transactionChain.setQueryAndGetResult(createShopQueryObj);
+
+    if(DbResponses.isSqlErrorResponse(shopResponse.status)){
+        logger.error(shopResponse.data.sqlMessage || "Internal Server Error!" )
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!" }));
         return;
     }
-    logger.info("Shop Created. Id: " + creationResponse.data.id);
+
+    if(!(shopResponse.data.insertId && shopResponse.data.insertId>0)){
+        logger.error( "Insert Id not valid" );
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!" }));
+        transactionChain.rollback();
+        return;
+    }else{
+        admin.shopId = shopResponse.data.insertId;
+    }
+
+    const createAdmin = dbQueryGen.getInsertQuery(2,Admin.EntityName,admin);
+    const adminResponse = await transactionChain.setQueryAndGetResult(createAdmin);
+
+    if(DbResponses.isSqlErrorResponse(adminResponse.status)){
+        logger.error(adminResponse.data.sqlMessage || "Internal Server Error!" )
+        res.status(500).send(ResponseFactory.getErrorResponse({message: adminResponse.data.sqlMessage || "Internal Server Error!" }));
+        return;
+    }
+
+    const queryResponse = await transactionChain.commitQueries();
+
+    if(DbResponses.isRollback(queryResponse.status)){
+        logger.error(queryResponse.data.sqlMessage || "Internal Server Error!" )
+        res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!" }));
+        return;
+    }
+    shop.id = admin.shopId;
+    logger.info("Shop Created. Id: " + admin.shopId);
     res.send(ResponseFactory.getSuccessResponse({
-        data: ShopApiResponse.ShopCreationResponse(creationResponse.data),
+        data: ShopApiResponse.ShopCreationResponse(shop),
         message: "Shop Created"
     }));
+    // console.log(queryResponse.data);
+
+    // const creationResponse = await dbOperations.create(Shop.EntityName, shop);
+    //
+    // if (DbResponses.isSqlErrorResponse(creationResponse.status)) {
+    //     res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Shop."}));
+    //     return;
+    // }
+    // logger.info("Shop Created. Id: " + creationResponse.data.id);
+    // res.send(ResponseFactory.getSuccessResponse({
+    //     data: ShopApiResponse.ShopCreationResponse(creationResponse.data),
+    //     message: "Shop Created"
+    // }));
 };
 
 exports.findOne = async (req, res) => {

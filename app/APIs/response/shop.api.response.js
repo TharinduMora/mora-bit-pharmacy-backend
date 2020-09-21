@@ -2,7 +2,7 @@ class ShopApiResponse {
 
     ShopCreationResponse(shop) {
         this.id = shop.id || 0;
-        this.status = shop.id || 0;
+        this.status = shop.status || 0;
         this.name = shop.name || null;
         this.email = shop.email || null;
         this.description = shop.description || null;

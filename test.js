@@ -1,14 +1,12 @@
-const DbTransactionChain = require("./app/shared/database/db.operations.chain");
+const DBTransactionChain = require("./app/shared/database/db.transaction.chain");
 const queryGen = require("./app/shared/database/db.query.gen.function");
 const Shop = require("./app/models/shop.model");
 const Admin = require("./app/models/admin.model");
 
-const DBTransactionConnectionSingleton = require("./app/shared/database/db.transaction.connection.singleton");
-const transactionConnection = DBTransactionConnectionSingleton.getTransactionConnection();
-
+const dbResponses = require("./app/APIs/response/db.response.factory");
 
 asd = async ()=>{
-    const chain = transactionConnection.chain();
+    const transactionChain = DBTransactionChain.getTransactionChain();
     const shop = new Shop({
         name: "test1",
         email: "test1",
@@ -33,63 +31,30 @@ asd = async ()=>{
         shopId:1
     });
     const createShop = queryGen.getInsertQuery(1,Shop.EntityName,shop);
-    // const shopResponse = await em.setQuery(createShop,false);
-    const shopResponse = await DbTransactionChain.setQueryAndGetResult(createShop);
+    const shopResponse = await transactionChain.setQueryAndGetResult(createShop);
 
-    admin.shopId = shopResponse.insertId;
+    if(dbResponses.isSqlErrorResponse(shopResponse.status)){
+        console.log(shopResponse.data.sqlMessage);
+        return;
+    }
+
+    admin.shopId = shopResponse.data.insertId;
     const createAdmin = queryGen.getInsertQuery(2,Admin.EntityName,admin);
-    // const adminResponse = await em.setQuery(createAdmin,true);
-    const adminResponse = await DbTransactionChain.setQueryAndGetResult(createAdmin);
+    const adminResponse = await transactionChain.setQueryAndGetResult(createAdmin);
 
-    const queryResponse = await DbTransactionChain.commitQueries();
-    console.log(queryResponse);
+    if(dbResponses.isSqlErrorResponse(adminResponse.status)){
+        console.log(adminResponse.data.sqlMessage)
+        return;
+    }
 
-
-    // if(adminResponse){
-    //     console.log("done");
-    // }
-
-    // chain.
-    // on('commit', function(){
-    //     console.log('number commit');
-    // }).
-    // on('rollback', function(err){
-    //     console.log('rollback');
-    //     console.log(err);
-    // });
-    //
-    // chain.query(createShop.query,createShop.value).on('result', function(result){
-    //     console.log(result.insertId);
-    // }).
-    // query(createAdmin.query,createAdmin.value).on('result', function(result){
-    //     chain.commit();
-    // }).
-    // autoCommit(false);
+    const queryResponse = await transactionChain.commitQueries();
+    if(dbResponses.isRollback(queryResponse.status)){
+        console.log(queryResponse.data.sqlMessage);
+        return;
+    }
+    console.log(queryResponse.data);
 };
 
 asd().then(r => {
     // console.log(r);
 });
-
-
-// function aaa1(){
-//     console.log("Started");
-//     return new Promise((resolve, reject) => {
-//         setTimeout(() => {
-//             // resolve(true);
-//             reject("kela");
-//         }, 2000);
-//     });
-// };
-//
-// async function asd() {
-//     const aaa = await aaa1().catch(()=>{});
-//     console.log(aaa);
-// }
-//
-// function asd2(){
-//     console.log("func 2");
-// }
-//
-// asd().then();
-// asd2();

@@ -4,6 +4,8 @@ module.exports = {
         SQL_ERROR: 1,
         DATA_NOT_FOUND: 2,
         SUCCESS: 3,
+        COMMIT_SUCCESS: 4,
+        ROLLBACK: 5
     },
     RESPONSE_STATUS: {
         RESPONSE_SUCCESS: 1,

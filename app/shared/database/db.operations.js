@@ -6,18 +6,17 @@ const poolConnection = ConnectionPool.getConnectionPool();
 const DBTransactionConnectionSingleton = require("./db.transaction.connection.singleton");
 const transactionConnection = DBTransactionConnectionSingleton.getTransactionConnection();
 
+const logger = require("../logger/logger.module")("db.operations.js");
+
 exports.create = function (entityName, entityObject) {
     return new Promise((resolve, reject) => {
         poolConnection.query(`INSERT INTO ${entityName} SET ?`, entityObject, (err, res) => {
             if (err) {
-                console.log(entityName + " creation failed with error: ", err);
-                // resolve(ResponseFactory.getErrorResponse({message: err}))
+                logger.error(entityName + " creation failed with error: ", err);
                 resolve(DBResponseFactory.SQL_ERROR())
                 return;
             }
-            console.log("created : " + entityName + " ID: " + res.insertId);
             entityObject.id = res.insertId;
-            // resolve(ResponseFactory.getSuccessResponse({data: entityObject}))
             resolve(DBResponseFactory.Success(entityObject))
         });
     })
@@ -31,18 +30,14 @@ exports.updateEntity = function (updatingObject, entityName, condition, primaryI
         poolConnection.query(
             queryValue.query, queryValue.value, (err, res) => {
                 if (err) {
-                    console.log("updating " + entityName + " failed with error: ", err);
-                    // resolve(ResponseFactory.getErrorResponse({message: err}))
+                    logger.error("updating " + entityName + " failed with error: ", err);
                     resolve(DBResponseFactory.SQL_ERROR())
                     return;
                 }
                 if (res.affectedRows == 0) {
-                    // resolve(ResponseFactory.getSuccessResponse({id: mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND}));
                     resolve(DBResponseFactory.DataNotFound());
                     return;
                 }
-                console.log("updated " + entityName + " Id: ", primaryId);
-                // resolve(ResponseFactory.getSuccessResponse({id: primaryId}))
                 resolve(DBResponseFactory.Success({id: primaryId}));
             }
         );
@@ -54,17 +49,14 @@ exports.findOne = function (entityName, primaryKey, primaryId) {
         const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = '${primaryId}'`;
         poolConnection.query(sqlQuery, (err, res) => {
             if (err) {
-                console.log("error: ", err);
-                // resolve(ResponseFactory.getErrorResponse({message: err}))
+                logger.error("Error on find one in " + entityName + ". error: ", err);
                 resolve(DBResponseFactory.SQL_ERROR());
                 return;
             }
             if (res.length) {
-                // resolve(ResponseFactory.getSuccessResponse({data: res[0]}));
                 resolve(DBResponseFactory.Success(res[0]));
                 return;
             }
-            // resolve(ResponseFactory.getSuccessResponse({id: mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND}));
             resolve(DBResponseFactory.DataNotFound());
         });
     })
@@ -74,18 +66,15 @@ exports.getResultByQuery = function (SELECT_SQL) {
     return new Promise((resolve, reject) => {
         poolConnection.query(SELECT_SQL, (err, res) => {
             if (err) {
-                console.log(err.sqlMessage);
-                // resolve(ResponseFactory.getErrorResponse({message: err}))
+                logger.error("Error on get result by query. error: ", err.sqlMessage);
                 resolve(DBResponseFactory.SQL_ERROR())
                 return;
             }
             if (res.length > 0) {
-                // resolve(ResponseFactory.getSuccessResponse({data: res}));
                 resolve(DBResponseFactory.Success(res));
                 return;
             }
             resolve(DBResponseFactory.DataNotFound())
-            // resolve(ResponseFactory.getSuccessResponse({id: mainConfig.DB_RESPONSE_IDS.DATA_NOT_FOUND}));
         });
     });
 }
@@ -115,12 +104,9 @@ exports.executeAsTransaction = (queryListArray, resultMapKey, result) => {
     const resultMap = {};
 
     queryListArray.forEach((query) => {
-        // if (query instanceof queryGenFunctions.getQueryValueClass) {
         chain.query(query.query, query.value).on('result', function (res) {
-            // if (res.affectedRows > 0 && res.insertId > 0) {
             resultMap[resultMapKey + query.queryId] = res;
-            // }
         });
-        // }
     });
 };
+

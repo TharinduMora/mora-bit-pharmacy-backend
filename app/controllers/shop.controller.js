@@ -10,6 +10,8 @@ const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const ShopApiResponse = require("../APIs/response/shop.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
 
+const logger = require("../shared/logger/logger.module")("shop.controller.js");
+
 exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
@@ -23,6 +25,7 @@ exports.create = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Shop."}));
         return;
     }
+    logger.info("Shop Created. Id: " + creationResponse.data.id);
     res.send(ResponseFactory.getSuccessResponse({
         data: ShopApiResponse.ShopCreationResponse(creationResponse.data),
         message: "Shop Created"
@@ -65,6 +68,7 @@ exports.update = async (req, res) => {
         return;
     }
 
+    logger.info('Shop Updated: Id: ' + updatingShop.id);
     res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 
@@ -98,3 +102,37 @@ exports.findByCriteria = (req, res) => {
     searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER,COLUMN_MAP, searchReq, res);
 };
+
+// exports.createSh = (req, res) => {
+//
+//     let transactionalQueryList = [];
+//
+//     const admin = new Admin({
+//         userName: "Test",
+//         password: "Test",
+//         email: "Test Trans",
+//         telephone: "Test",
+//         address: "Test",
+//         city: "Test"
+//     });
+//
+//     // passing queryId is must for getting result object
+//     const AdminUpdateQuery = dbQueryGenFunctions.getUpdateQuery(1, new Admin(req.body), Admin.EntityName, ` id = ${req.body.id} `, req.body.id, Admin.updateRestrictedColumns);
+//     const AdminInsertQuery = dbQueryGenFunctions.getInsertQuery(2, Admin.EntityName, admin);
+//
+//     transactionalQueryList.push(AdminInsertQuery, AdminUpdateQuery);
+//
+//     dbOperations.executeAsTransaction(transactionalQueryList, 'resMap_', (err, result) => {
+//         if (err) {
+//             res.status(500).send(err);
+//         } else {
+//             if (result['resMap_' + 2]) {
+//                 let newAdmin = {...admin};
+//                 newAdmin.id = result['resMap_' + 2].insertId;
+//                 res.send(newAdmin);
+//                 return;
+//             }
+//             res.send("Success");
+//         }
+//     })
+// };

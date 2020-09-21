@@ -13,6 +13,8 @@ const AdminApiResponse = require("../APIs/response/admin.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
 const sessionStore = require("../shared/session.store");
 
+const logger = require("../shared/logger/logger.module")("admin.controller.js");
+
 exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.CREATE_API, Admin.creationMandatoryColumns, false, res))
         return;
@@ -24,6 +26,7 @@ exports.create = async (req, res) => {
         return;
     }
     if (DbResponses.isSuccessResponse(ResultResponse.status) && ResultResponse.data.length > 0) {
+        logger.info("User Name already exist. username: " + req.body.userName);
         res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
         return;
     }
@@ -49,6 +52,7 @@ exports.create = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Admin."}));
         return;
     }
+    logger.info("Admin Created. Id: " + creationResponse.data.id);
     res.send(ResponseFactory.getSuccessResponse({
         data: AdminApiResponse.AdminCreationResponse(creationResponse.data),
         message: "Admin Created"
@@ -85,10 +89,9 @@ exports.login = async (req, res) => {
         return;
     }
 
-    sessionStore.addAdminSession(admin.sessionId,AdminApiResponse.AdminLoginResponse(admin));
-
+    sessionStore.addAdminSession(admin.sessionId, AdminApiResponse.AdminLoginResponse(admin));
+    logger.info('Admin Login Success: Id: ' + admin.id + " with sessionId: " + admin.sessionId);
     res.status(200).send(ResponseFactory.getSuccessResponse({
-        // data: new Admin.LoginResponse(admin),
         data: AdminApiResponse.AdminLoginResponse(admin),
         message: 'Login Success'
     }))
@@ -130,6 +133,7 @@ exports.update = async (req, res) => {
         return;
     }
 
+    logger.info('Admin Updated: Id: ' + updatingAdmin.id);
     res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 

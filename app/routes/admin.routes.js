@@ -8,8 +8,7 @@ router.get('/', commonFunctions.authValidator(appFunctions.FIND_ADMIN_BY_CRITERI
 
 router.get('/:adminId', commonFunctions.authValidator(appFunctions.VIEW_ADMIN_DETAILS.ID), admin.findOne);
 
-// router.post('/',commonFunctions.authValidator(appFunctions.CREATE_ADMIN.ID), admin.create);
-router.post('/',admin.create);
+router.post('/', commonFunctions.authValidator(appFunctions.CREATE_ADMIN.ID), admin.create);
 
 router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_ADMIN.ID), admin.update);
 

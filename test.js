@@ -6,7 +6,7 @@ const Admin = require("./app/models/admin.model");
 const dbResponses = require("./app/APIs/response/db.response.factory");
 
 asd = async ()=>{
-    const transactionChain = DBTransactionChain.getTransactionChain();
+    const transactionChain = DBTransactionChain.getTransaction();
     const shop = new Shop({
         name: "test1",
         email: "test1",
@@ -31,7 +31,7 @@ asd = async ()=>{
         shopId:1
     });
     const createShop = queryGen.getInsertQuery(1,Shop.EntityName,shop);
-    const shopResponse = await transactionChain.setQueryAndGetResult(createShop);
+    const shopResponse = await transactionChain.execute(createShop);
 
     if(dbResponses.isSqlErrorResponse(shopResponse.status)){
         console.log(shopResponse.data.sqlMessage);
@@ -40,14 +40,14 @@ asd = async ()=>{
 
     admin.shopId = shopResponse.data.insertId;
     const createAdmin = queryGen.getInsertQuery(2,Admin.EntityName,admin);
-    const adminResponse = await transactionChain.setQueryAndGetResult(createAdmin);
+    const adminResponse = await transactionChain.execute(createAdmin);
 
     if(dbResponses.isSqlErrorResponse(adminResponse.status)){
         console.log(adminResponse.data.sqlMessage)
         return;
     }
 
-    const queryResponse = await transactionChain.commitQueries();
+    const queryResponse = await transactionChain.commit();
     if(dbResponses.isRollback(queryResponse.status)){
         console.log(queryResponse.data.sqlMessage);
         return;

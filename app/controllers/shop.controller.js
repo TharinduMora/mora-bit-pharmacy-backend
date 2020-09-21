@@ -39,10 +39,10 @@ exports.create = async (req, res) => {
     admin.password = req.body.admin.password;
     admin.fullName = req.body.admin.fullName;
 
-    const transactionChain = dbTransaction.getTransactionChain();
+    const txn = dbTransaction.getTransaction();
 
     const createShopQueryObj = dbQueryGen.getInsertQuery(1,Shop.EntityName,shop);
-    const shopResponse = await transactionChain.setQueryAndGetResult(createShopQueryObj);
+    const shopResponse = await txn.execute(createShopQueryObj);
 
     if(DbResponses.isSqlErrorResponse(shopResponse.status)){
         logger.error(shopResponse.data.sqlMessage || "Internal Server Error!" )
@@ -51,16 +51,16 @@ exports.create = async (req, res) => {
     }
 
     if(!(shopResponse.data.insertId && shopResponse.data.insertId>0)){
-        logger.error( "Insert Id not valid" );
+        logger.error( "Insert Id is not valid" );
         res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!" }));
-        transactionChain.rollback();
+        txn.rollback();
         return;
     }else{
         admin.shopId = shopResponse.data.insertId;
     }
 
     const createAdmin = dbQueryGen.getInsertQuery(2,Admin.EntityName,admin);
-    const adminResponse = await transactionChain.setQueryAndGetResult(createAdmin);
+    const adminResponse = await txn.execute(createAdmin);
 
     if(DbResponses.isSqlErrorResponse(adminResponse.status)){
         logger.error(adminResponse.data.sqlMessage || "Internal Server Error!" )
@@ -68,7 +68,7 @@ exports.create = async (req, res) => {
         return;
     }
 
-    const queryResponse = await transactionChain.commitQueries();
+    const queryResponse = await txn.commit();
 
     if(DbResponses.isRollback(queryResponse.status)){
         logger.error(queryResponse.data.sqlMessage || "Internal Server Error!" )

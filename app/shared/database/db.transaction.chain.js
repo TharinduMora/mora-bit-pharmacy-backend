@@ -8,7 +8,7 @@ class TransactionChain{
         this.chain = transactionConnection.chain();
     }
 
-    async setQueryAndGetResult(query){
+    async execute(query){
         return new Promise((resolve, reject) => {
             this.chain.query(query.query, query.value).on('result', (result)=> {
                 resolve(dbResponses.Success(result));
@@ -19,7 +19,7 @@ class TransactionChain{
         });
     }
 
-    async commitQueries(){
+    async commit(){
         return new Promise((resolve, reject) => {
             this.chain.on('commit', (data) =>{
                 console.log('commit')
@@ -38,7 +38,7 @@ class TransactionChain{
 }
 
 class DBTransactionChain{
-    getTransactionChain(){
+    getTransaction(){
         return new TransactionChain();
     }
 

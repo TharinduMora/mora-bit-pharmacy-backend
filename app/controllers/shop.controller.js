@@ -41,38 +41,40 @@ exports.create = async (req, res) => {
 
     const txn = dbTransaction.getTransaction();
 
-    const createShopQueryObj = dbQueryGen.getInsertQuery(1,Shop.EntityName,shop);
+    // const createShopQueryObj = dbQueryGen.getInsertQueryByCriteria(Shop.EntityName,shop);
+    const createShopQueryObj = dbQueryGen.getInsertOneQuery(Shop, shop);
     const shopResponse = await txn.execute(createShopQueryObj);
 
-    if(DbResponses.isSqlErrorResponse(shopResponse.status)){
-        logger.error(shopResponse.data.sqlMessage || "Internal Server Error!" )
-        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!" }));
+    if (DbResponses.isSqlErrorResponse(shopResponse.status)) {
+        logger.error(shopResponse.data.sqlMessage || "Internal Server Error!")
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!"}));
         return;
     }
 
-    if(!(shopResponse.data.insertId && shopResponse.data.insertId>0)){
-        logger.error( "Insert Id is not valid" );
-        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!" }));
+    if (!(shopResponse.data.insertId && shopResponse.data.insertId > 0)) {
+        logger.error("Insert Id is not valid");
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!"}));
         txn.rollback();
         return;
-    }else{
+    } else {
         admin.shopId = shopResponse.data.insertId;
     }
 
-    const createAdmin = dbQueryGen.getInsertQuery(2,Admin.EntityName,admin);
+    // const createAdmin = dbQueryGen.getInsertQueryByCriteria(Admin.EntityName,admin);
+    const createAdmin = dbQueryGen.getInsertOneQuery(Admin, admin);
     const adminResponse = await txn.execute(createAdmin);
 
-    if(DbResponses.isSqlErrorResponse(adminResponse.status)){
-        logger.error(adminResponse.data.sqlMessage || "Internal Server Error!" )
-        res.status(500).send(ResponseFactory.getErrorResponse({message: adminResponse.data.sqlMessage || "Internal Server Error!" }));
+    if (DbResponses.isSqlErrorResponse(adminResponse.status)) {
+        logger.error(adminResponse.data.sqlMessage || "Internal Server Error!")
+        res.status(500).send(ResponseFactory.getErrorResponse({message: adminResponse.data.sqlMessage || "Internal Server Error!"}));
         return;
     }
 
     const queryResponse = await txn.commit();
 
-    if(DbResponses.isRollback(queryResponse.status)){
-        logger.error(queryResponse.data.sqlMessage || "Internal Server Error!" )
-        res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!" }));
+    if (DbResponses.isRollback(queryResponse.status)) {
+        logger.error(queryResponse.data.sqlMessage || "Internal Server Error!")
+        res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!"}));
         return;
     }
     shop.id = admin.shopId;

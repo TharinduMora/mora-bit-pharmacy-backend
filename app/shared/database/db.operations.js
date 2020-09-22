@@ -8,12 +8,13 @@ const transactionConnection = DBTransactionConnectionSingleton.getTransactionCon
 
 const logger = require("../logger/logger.module")("db.operations.js");
 
-exports.create = function (entityName, entityObject) {
+exports.create = function (entity, entityObject) {
     return new Promise((resolve, reject) => {
-        poolConnection.query(`INSERT INTO ${entityName} SET ?`, entityObject, (err, res) => {
+        const insertQueryObj = queryGenFunctions.getInsertOneQuery(entity, entityObject);
+        poolConnection.query(insertQueryObj.query, insertQueryObj.value, (err, res) => {
             if (err) {
-                logger.error(entityName + " creation failed with error: ", err);
-                resolve(DBResponseFactory.SQL_ERROR())
+                logger.error(entity['EntityName'] + " creation failed with error: ", err);
+                resolve(DBResponseFactory.SQL_ERROR());
                 return;
             }
             entityObject.id = res.insertId;
@@ -22,9 +23,31 @@ exports.create = function (entityName, entityObject) {
     })
 };
 
+exports.updateOne = function (entity,updatingObject ) {
+
+    const queryValue = queryGenFunctions.getUpdateOneQuery(entity,updatingObject);
+
+    return new Promise((resolve, reject) => {
+        poolConnection.query(
+            queryValue.query, queryValue.value, (err, res) => {
+                if (err) {
+                    logger.error("updating " + entity['EntityName'] + " failed with error: ", err);
+                    resolve(DBResponseFactory.SQL_ERROR());
+                    return;
+                }
+                if (res.affectedRows == 0) {
+                    resolve(DBResponseFactory.DataNotFound());
+                    return;
+                }
+                resolve(DBResponseFactory.Success({id: updatingObject[entity['EntityName']]}));
+            }
+        );
+    })
+};
+
 exports.updateEntity = function (updatingObject, entityName, condition, primaryId, updateDisableColumns) {
 
-    const queryValue = queryGenFunctions.getUpdateQuery(0, updatingObject, entityName, condition, primaryId, updateDisableColumns);
+    const queryValue = queryGenFunctions.getUpdateQueryByCriteria( updatingObject, entityName, condition, primaryId, updateDisableColumns);
 
     return new Promise((resolve, reject) => {
         poolConnection.query(

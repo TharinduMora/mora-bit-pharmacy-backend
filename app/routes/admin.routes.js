@@ -14,7 +14,7 @@ router.put('/', commonFunctions.authValidator(appFunctions.UPDATE_ADMIN.ID), adm
 
 router.post('/findByCriteria', commonFunctions.authValidator(appFunctions.FIND_ADMIN_BY_CRITERIA.ID), admin.findByCriteria);
 
-router.post('/transTest', admin.transTest);
+// router.post('/transTest', admin.transTest);
 
 router.post('/login', admin.login);
 

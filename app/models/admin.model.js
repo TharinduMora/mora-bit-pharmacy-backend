@@ -16,6 +16,7 @@ const Admin = function (admin) {
 };
 
 Admin.EntityName = "admin";
+Admin.PrimaryKey = "id";
 
 Admin.NamedQuery = {
     getAdminByUserName(userName) {
@@ -29,8 +30,8 @@ Admin.NamedQuery = {
     }
 };
 
-Admin.creationMandatoryColumns = ["userName", "password", "email","shopId"];
+Admin.creationMandatoryColumns = ["userName", "password", "email", "shopId"];
 Admin.updateMandatoryColumns = ["id"];
-Admin.updateRestrictedColumns = ["id", "email", "userName", "password", "email"];
+Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "password", "status", "systemAdmin"];
 
 module.exports = Admin;

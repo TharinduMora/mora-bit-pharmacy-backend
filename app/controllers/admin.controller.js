@@ -46,7 +46,7 @@ exports.create = async (req, res) => {
     admin.roleId = appRoles.ROLE_1.ID;
     admin.status = mainConfig.SYSTEM_STATUS.CREATED;
 
-    const creationResponse = await dbOperations.create(Admin.EntityName, admin);
+    const creationResponse = await dbOperations.create(Admin, admin);
 
     if (DbResponses.isSqlErrorResponse(creationResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Admin."}));
@@ -118,22 +118,21 @@ exports.update = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ApiRequest.Admin.UPDATE_API, Admin.updateMandatoryColumns, false, res))
         return;
 
-    // Create Update Condition
-    const updateCondition = ` id = ${req.body.id} `;
-    let updatingAdmin = new Admin(req.body);
+    let updateObject = new Admin(req.body);
 
-    const updateResponse = await dbOperations.updateEntity(new Admin(updatingAdmin), Admin.EntityName, updateCondition, req.body.id, Admin.updateRestrictedColumns);
+    const updateResponse = await dbOperations.updateOne(Admin, updateObject);
 
     if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Admin Updating failed with Id:" + req.body.id}));
         return;
     }
+
     if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
         res.status(204).send();
         return;
     }
 
-    logger.info('Admin Updated: Id: ' + updatingAdmin.id);
+    logger.info('Admin Updated: Id: ' + updateObject.id);
     res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 
@@ -166,38 +165,4 @@ exports.findByCriteria = (req, res) => {
 
     searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER,COLUMN_MAP, searchReq, res);
-};
-
-exports.transTest = (req, res) => {
-
-    let transactionalQueryList = [];
-
-    const admin = new Admin({
-        userName: "Test",
-        password: "Test",
-        email: "Test Trans",
-        telephone: "Test",
-        address: "Test",
-        city: "Test"
-    });
-
-    // passing queryId is must for getting result object
-    const AdminUpdateQuery = dbQueryGenFunctions.getUpdateQuery(1, new Admin(req.body), Admin.EntityName, ` id = ${req.body.id} `, req.body.id, Admin.updateRestrictedColumns);
-    const AdminInsertQuery = dbQueryGenFunctions.getInsertQuery(2, Admin.EntityName, admin);
-
-    transactionalQueryList.push(AdminInsertQuery, AdminUpdateQuery);
-
-    dbOperations.executeAsTransaction(transactionalQueryList, 'resMap_', (err, result) => {
-        if (err) {
-            res.status(500).send(err);
-        } else {
-            if (result['resMap_' + 2]) {
-                let newAdmin = {...admin};
-                newAdmin.id = result['resMap_' + 2].insertId;
-                res.send(newAdmin);
-                return;
-            }
-            res.send("Success");
-        }
-    })
 };

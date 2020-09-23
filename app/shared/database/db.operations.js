@@ -45,7 +45,7 @@ exports.updateOne = function (entity,updatingObject ) {
     })
 };
 
-exports.updateEntity = function (updatingObject, entityName, condition, primaryId, updateDisableColumns) {
+exports.updateEntityByCriteria = function (updatingObject, entityName, condition, primaryId, updateDisableColumns) {
 
     const queryValue = queryGenFunctions.getUpdateQueryByCriteria( updatingObject, entityName, condition, primaryId, updateDisableColumns);
 
@@ -67,12 +67,12 @@ exports.updateEntity = function (updatingObject, entityName, condition, primaryI
     })
 };
 
-exports.findOne = function (entityName, primaryKey, primaryId) {
+exports.findOne = function (entity, primaryId) {
     return new Promise((resolve, reject) => {
-        const sqlQuery = `SELECT * FROM  ${entityName} WHERE ${primaryKey} = '${primaryId}'`;
+        const sqlQuery = queryGenFunctions.getFindOneQuery(entity,primaryId);
         poolConnection.query(sqlQuery, (err, res) => {
             if (err) {
-                logger.error("Error on find one in " + entityName + ". error: ", err);
+                logger.error("Error on find one in " + entity['EntityName'] + ". error: ", err);
                 resolve(DBResponseFactory.SQL_ERROR());
                 return;
             }

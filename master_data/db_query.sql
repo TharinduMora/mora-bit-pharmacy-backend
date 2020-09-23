@@ -27,7 +27,7 @@ CREATE TABLE admin
     roleId      int          DEFAULT 0,
     status      int          DEFAULT 0,
     systemAdmin tinyint(1)   DEFAULT 0,
-    userName    varchar(255) NOT NULL,
+    userName    varchar(255) NOT NULL UNIQUE,
     password    varchar(255) NOT NULL,
     fullName    varchar(255) DEFAULT NULL,
     image       varchar(255) DEFAULT NULL,

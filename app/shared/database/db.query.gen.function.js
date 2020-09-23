@@ -78,6 +78,10 @@ class QueryGenFunctions {
             condition, updateObject[updateEntity['PrimaryKey']], updateEntity['updateRestrictedColumns']);
     }
 
+    getFindOneQuery(entity, primaryId) {
+        `SELECT * FROM  ${entity['EntityName']} WHERE ${entity['PrimaryKey']} ='${primaryId}'`;
+    }
+
     getInsertOneQuery(insertEntity, insertObject) {
         return this.getInsertQueryByCriteria(insertEntity['EntityName'], insertObject)
     }

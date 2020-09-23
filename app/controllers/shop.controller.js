@@ -3,20 +3,21 @@ const Admin = require("../models/admin.model");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const dbTransaction = require("../shared/database/db.transaction.chain");
-const dbQueryGen = require("../shared/database/db.query.gen.function")
 const searchTemplate = require("../shared/search/search.template");
 const SearchRequest = require("../shared/search/SearchRequest");
 const mainConfig = require("../../app/config/main.config");
 
-const ApiRequest = require("../APIs/request/api.request");
+const ShopApiRequest = require("../APIs/request/shop.api.request");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const ShopApiResponse = require("../APIs/response/shop.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
 
+const APP_ROLES = require("../config/app.role").APP_ROLES;
+
 const logger = require("../shared/logger/logger.module")("shop.controller.js");
 
 exports.create = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, ApiRequest.Shop.CREATE_API, Shop.creationMandatoryColumns, false, res))
+    if (!commonFunctions.requestValidator(req.body, ShopApiRequest.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
 
     const AdminSearchResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.admin.userName));
@@ -31,19 +32,18 @@ exports.create = async (req, res) => {
         return;
     }
 
-    const shop = new Shop(req.body);
+    let shop = new Shop(req.body);
     shop.status = mainConfig.SYSTEM_STATUS.CREATED;
 
-    const admin = new Admin(req.body);
+    let admin = new Admin(req.body);
     admin.userName = req.body.admin.userName;
     admin.password = req.body.admin.password;
     admin.fullName = req.body.admin.fullName;
+    admin.roleId = APP_ROLES.ROLE_2.ID;
 
     const txn = dbTransaction.getTransaction();
 
-    // const createShopQueryObj = dbQueryGen.getInsertQueryByCriteria(Shop.EntityName,shop);
-    const createShopQueryObj = dbQueryGen.getInsertOneQuery(Shop, shop);
-    const shopResponse = await txn.execute(createShopQueryObj);
+    const shopResponse = await txn.persist(Shop, shop);
 
     if (DbResponses.isSqlErrorResponse(shopResponse.status)) {
         logger.error(shopResponse.data.sqlMessage || "Internal Server Error!")
@@ -51,23 +51,31 @@ exports.create = async (req, res) => {
         return;
     }
 
-    if (!(shopResponse.data.insertId && shopResponse.data.insertId > 0)) {
-        logger.error("Insert Id is not valid");
+    shop = shopResponse.data;
+
+    if (!(shop.id && shop.id > 0)) {
+        logger.error("Shop Id is not valid");
         res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.data.sqlMessage || "Internal Server Error!"}));
         txn.rollback();
         return;
     } else {
-        admin.shopId = shopResponse.data.insertId;
+        admin.shopId = shop.id;
     }
 
-    // const createAdmin = dbQueryGen.getInsertQueryByCriteria(Admin.EntityName,admin);
-    const createAdmin = dbQueryGen.getInsertOneQuery(Admin, admin);
-    const adminResponse = await txn.execute(createAdmin);
+    const adminResponse = await txn.persist(Admin, admin);
 
     if (DbResponses.isSqlErrorResponse(adminResponse.status)) {
         logger.error(adminResponse.data.sqlMessage || "Internal Server Error!")
         res.status(500).send(ResponseFactory.getErrorResponse({message: adminResponse.data.sqlMessage || "Internal Server Error!"}));
         return;
+    }
+
+    admin = adminResponse.data;
+
+    if (admin.shopId !== shop.id) {
+        logger.error("Admin Shop Id not matched with shop id.")
+        res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
+        txn.rollback();
     }
 
     const queryResponse = await txn.commit();
@@ -77,25 +85,42 @@ exports.create = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!"}));
         return;
     }
-    shop.id = admin.shopId;
-    logger.info("Shop Created. Id: " + admin.shopId);
+
+    logger.info("Shop Created. Id: " + shop.id);
     res.send(ResponseFactory.getSuccessResponse({
         data: ShopApiResponse.ShopCreationResponse(shop),
         message: "Shop Created"
     }));
-    // console.log(queryResponse.data);
+};
 
-    // const creationResponse = await dbOperations.create(Shop.EntityName, shop);
-    //
-    // if (DbResponses.isSqlErrorResponse(creationResponse.status)) {
-    //     res.status(500).send(ResponseFactory.getErrorResponse({message: creationResponse.message || "Some error occurred while creating the Shop."}));
-    //     return;
-    // }
-    // logger.info("Shop Created. Id: " + creationResponse.data.id);
-    // res.send(ResponseFactory.getSuccessResponse({
-    //     data: ShopApiResponse.ShopCreationResponse(creationResponse.data),
-    //     message: "Shop Created"
-    // }));
+exports.update = async (req, res) => {
+
+    console.log(req.admin);
+    // Validate the Request
+    if (!commonFunctions.requestValidator(req.body, ShopApiRequest.UPDATE_API, Shop.updateMandatoryColumns, false, res))
+        return;
+    if(!commonFunctions.isValidToProcess(req,res,req.body.id)){
+        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+        return ;
+    }
+
+    // Create Update Condition
+    const updateCondition = ` id = ${req.body.id} `;
+    let updatingShop = new Shop(req.body);
+
+    const updateResponse = await dbOperations.updateEntityByCriteria(new Shop(updatingShop), Shop.EntityName, updateCondition, req.body.id, Shop.updateRestrictedColumns);
+
+    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Shop Updating failed with Id:" + req.body.id}));
+        return;
+    }
+    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
+        res.status(204).send();
+        return;
+    }
+
+    logger.info('Shop Updated: Id: ' + updatingShop.id);
+    res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 
 exports.findOne = async (req, res) => {
@@ -111,31 +136,6 @@ exports.findOne = async (req, res) => {
     }
 
     res.send(ResponseFactory.getSuccessResponse({data: findResponse.data}));
-};
-
-exports.update = async (req, res) => {
-
-    // Validate the Request
-    if (!commonFunctions.requestValidator(req.body, ApiRequest.Shop.UPDATE_API, Shop.updateMandatoryColumns, false, res))
-        return;
-
-    // Create Update Condition
-    const updateCondition = ` id = ${req.body.id} `;
-    let updatingShop = new Shop(req.body);
-
-    const updateResponse = await dbOperations.updateEntity(new Shop(updatingShop), Shop.EntityName, updateCondition, req.body.id, Shop.updateRestrictedColumns);
-
-    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
-        res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Shop Updating failed with Id:" + req.body.id}));
-        return;
-    }
-    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
-        res.status(204).send();
-        return;
-    }
-
-    logger.info('Shop Updated: Id: ' + updatingShop.id);
-    res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 
 exports.findAll = (req, res) => {

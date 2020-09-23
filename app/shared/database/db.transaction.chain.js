@@ -48,7 +48,6 @@ class TransactionChain {
     async commit() {
         return new Promise((resolve, reject) => {
             this.chain.on('commit', (data) => {
-                console.log('commit')
                 resolve(dbResponses.CommitSuccess(data));
             }).on('rollback', (err) => {
                 console.log('rollback')

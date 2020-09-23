@@ -17,7 +17,6 @@ const Admin = function (admin) {
 
 Admin.EntityName = "admin";
 Admin.PrimaryKey = "id";
-
 Admin.NamedQuery = {
     getAdminByUserName(userName) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
@@ -29,7 +28,6 @@ Admin.NamedQuery = {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
 };
-
 Admin.creationMandatoryColumns = ["userName", "password", "email", "shopId"];
 Admin.updateMandatoryColumns = ["id"];
 Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "password", "status", "systemAdmin"];

@@ -103,9 +103,21 @@ exports.update = async (req, res) => {
     // Validate the Request
     if (!commonFunctions.requestValidator(req.body, ShopApiRequest.UPDATE_API, Shop.updateMandatoryColumns, false, res))
         return;
-    if(!commonFunctions.isValidToProcess(req,res,req.body.id)){
-        return ;
+
+    const shopSearchResponse = await dbOperations.findOne(Shop,req.body.id);
+
+    if (DbResponses.isSqlErrorResponse(shopSearchResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopSearchResponse.message || "Internal Server Error!" }));
+        return;
     }
+    if(DbResponses.isDataNotFoundResponse(shopSearchResponse.status)){
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " +req.body.id}));
+        return;
+    }
+    const shop = shopSearchResponse.data;
+
+    if(!commonFunctions.isValidToProcess(req,res,shop.id))
+        return ;
 
     // Create Update Condition
     const updateCondition = ` id = ${req.body.id} `;

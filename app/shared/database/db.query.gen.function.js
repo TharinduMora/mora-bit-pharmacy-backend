@@ -79,7 +79,7 @@ class QueryGenFunctions {
     }
 
     getFindOneQuery(entity, primaryId) {
-        `SELECT * FROM  ${entity['EntityName']} WHERE ${entity['PrimaryKey']} ='${primaryId}'`;
+       return `SELECT * FROM  ${entity['EntityName']} WHERE ${entity['PrimaryKey']} ='${primaryId}'`;
     }
 
     getInsertOneQuery(insertEntity, insertObject) {

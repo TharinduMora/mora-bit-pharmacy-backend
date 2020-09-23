@@ -71,7 +71,7 @@ exports.isValidToProcess = (req,res,entityShopId) => {
     if(req.admin && req.admin.shopId === entityShopId){
          return true;
     }else{
-        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalidate User to current action.'}));
         return false;
     }
 };

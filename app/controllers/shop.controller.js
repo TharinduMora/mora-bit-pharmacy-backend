@@ -20,6 +20,11 @@ exports.create = async (req, res) => {
     if (!commonFunctions.requestValidator(req.body, ShopApiRequest.CREATE_API, Shop.creationMandatoryColumns, false, res))
         return;
 
+    if(!(req.body.admin && req.body.admin.userName)){
+        res.status(400).send(ResponseFactory.getErrorResponse({message: 'user name required'}))
+        return;
+    }
+
     const AdminSearchResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.admin.userName));
 
     if (DbResponses.isSqlErrorResponse(AdminSearchResponse.status)) {
@@ -95,12 +100,10 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
 
-    console.log(req.admin);
     // Validate the Request
     if (!commonFunctions.requestValidator(req.body, ShopApiRequest.UPDATE_API, Shop.updateMandatoryColumns, false, res))
         return;
     if(!commonFunctions.isValidToProcess(req,res,req.body.id)){
-        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
         return ;
     }
 

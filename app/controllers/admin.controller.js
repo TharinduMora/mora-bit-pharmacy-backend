@@ -112,7 +112,7 @@ exports.login = async (req, res) => {
     }
 
     let admin = new Admin(ResultResponse.data[0]);
-    admin.id = ResultResponse.data[0].id;
+    // admin.id = ResultResponse.data[0].id;
     admin.sessionId = commonFunctions.getSessionId();
 
     // const updateResponse = dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns);

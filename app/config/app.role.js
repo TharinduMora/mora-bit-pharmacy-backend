@@ -17,6 +17,7 @@ exports.APP_ROLES = {
             AppFunctions.FIND_SHOP_BY_CRITERIA.ID,
             AppFunctions.VIEW_SHOP_DETAILS.ID,
             AppFunctions.CREATE_SHOP.ID,
+            AppFunctions.UPDATE_SHOP_STATUS.ID
         ]
     },
     ROLE_2: {

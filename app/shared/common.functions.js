@@ -5,22 +5,38 @@ const dbOperations = require("./database/db.operations");
 const Admin = require("../models/admin.model");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 
-exports.requestValidator = function (reqBody, api, mandatoryColumns, blankValues, res) {
+exports.validateRequestBody = function (reqBody, requestApi, blankValues, res) {
     if (!reqBody) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: "Content can not be empty!"}));
         return false;
     }
-    const requestPayloadChecker = payloadChecker.validator(reqBody, api, mandatoryColumns, blankValues);
+    if (!requestApi.BODY) {
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "API body can not be empty!"}));
+        return false;
+    }
+    if (!requestApi.MandatoryColumns) {
+        requestApi.MandatoryColumns = [];
+    }
+    const requestPayloadChecker = payloadChecker.validator(reqBody, requestApi.BODY, requestApi.MandatoryColumns, blankValues);
     if (!requestPayloadChecker.success) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: requestPayloadChecker.response.errorMessage}));
         return false;
     }
-    for(const key in reqBody){
-        if(!api.hasOwnProperty(key)){
+    for (const key in reqBody) {
+        if (!requestApi.BODY.hasOwnProperty(key)) {
             delete reqBody[key];
         }
     }
     return true;
+};
+
+exports.getFormattedReqBody = function (reqBody, api) {
+    for (const key in reqBody) {
+        if (!api.hasOwnProperty(key)) {
+            delete reqBody[key];
+        }
+    }
+    return reqBody;
 };
 
 exports.authValidator = (functionId) => {
@@ -67,13 +83,21 @@ exports.authValidator = (functionId) => {
     }
 };
 
-exports.isValidToProcess = (req,res,entityShopId) => {
-    if(req.admin && req.admin.shopId === entityShopId){
-         return true;
-    }else{
+exports.isValidToProcess = (req, res, entityShopId) => {
+    if (!req.admin) {
+        res.status(401).send(ResponseFactory.getErrorResponse({message: 'User Unauthorized..!'}));
+        return false;
+    }
+
+    if (req.admin.systemAdmin) {
+        return true;
+    }
+
+    if (parseInt(req.admin.shopId, 10) !== parseInt(entityShopId, 10)) {
         res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalidate User to current action.'}));
         return false;
     }
+    return true;
 };
 
 exports.getSessionId = function () {

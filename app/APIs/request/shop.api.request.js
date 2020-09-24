@@ -1,31 +1,37 @@
 ShopApiRequest = {
     CREATE_API: {
-        name: "",
-        email: "",
-        description: "",
-        image: "",
-        telephone: "",
-        address: "",
-        city: "",
-        longitude: 0.0,
-        latitude: 0.0,
-        admin: {
-            userName: "",
-            password: "",
-            fullName: ""
-        }
+        BODY: {
+            name: "",
+            email: "",
+            description: "",
+            image: "",
+            telephone: "",
+            address: "",
+            city: "",
+            longitude: 0.0,
+            latitude: 0.0,
+            admin: {
+                userName: "",
+                password: "",
+                fullName: ""
+            }
+        },
+        MandatoryColumns: ["name", "email", "telephone"]
     },
     UPDATE_API: {
-        id: 0,
-        name: "",
-        email: "",
-        description: "",
-        image: "",
-        telephone: "",
-        address: "",
-        city: "",
-        longitude: 0.0,
-        latitude: 0.0
+        BODY: {
+            id: 0,
+            name: "",
+            email: "",
+            description: "",
+            image: "",
+            telephone: "",
+            address: "",
+            city: "",
+            longitude: 0.0,
+            latitude: 0.0
+        },
+        MandatoryColumns: ["id"]
     }
 };
 

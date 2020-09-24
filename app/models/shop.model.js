@@ -15,9 +15,6 @@ const Shop = function (shop) {
 
 Shop.EntityName = "shop";
 Shop.PrimaryKey = "id";
-
-Shop.creationMandatoryColumns = ["name","email", "telephone"];
-Shop.updateMandatoryColumns = ["id"];
 Shop.updateRestrictedColumns = ["id", "email"];
 
 module.exports = Shop;

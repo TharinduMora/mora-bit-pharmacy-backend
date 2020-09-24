@@ -8,6 +8,7 @@ const SearchRequest = require("../shared/search/SearchRequest");
 const mainConfig = require("../../app/config/main.config");
 
 const ShopApiRequest = require("../APIs/request/shop.api.request");
+const ApiRequest = require("../APIs/request/common.api.request");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const ShopApiResponse = require("../APIs/response/shop.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
@@ -17,10 +18,10 @@ const APP_ROLES = require("../config/app.role").APP_ROLES;
 const logger = require("../shared/logger/logger.module")("shop.controller.js");
 
 exports.create = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, ShopApiRequest.CREATE_API, Shop.creationMandatoryColumns, false, res))
+    if (!commonFunctions.validateRequestBody(req.body, ShopApiRequest.CREATE_API, false, res))
         return;
 
-    if(!(req.body.admin && req.body.admin.userName)){
+    if (!(req.body.admin && req.body.admin.userName)) {
         res.status(400).send(ResponseFactory.getErrorResponse({message: 'user name required'}))
         return;
     }
@@ -101,29 +102,25 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
 
     // Validate the Request
-    if (!commonFunctions.requestValidator(req.body, ShopApiRequest.UPDATE_API, Shop.updateMandatoryColumns, false, res))
+    if (!commonFunctions.validateRequestBody(req.body, ShopApiRequest.UPDATE_API, true, res))
         return;
 
-    const shopSearchResponse = await dbOperations.findOne(Shop,req.body.id);
+    const shopSearchResponse = await dbOperations.findOne(Shop, req.body.id);
 
     if (DbResponses.isSqlErrorResponse(shopSearchResponse.status)) {
-        res.status(500).send(ResponseFactory.getErrorResponse({message: shopSearchResponse.message || "Internal Server Error!" }));
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopSearchResponse.message || "Internal Server Error!"}));
         return;
     }
-    if(DbResponses.isDataNotFoundResponse(shopSearchResponse.status)){
-        res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " +req.body.id}));
+    if (DbResponses.isDataNotFoundResponse(shopSearchResponse.status)) {
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " + req.body.id}));
         return;
     }
     const shop = shopSearchResponse.data;
 
-    if(!commonFunctions.isValidToProcess(req,res,shop.id))
-        return ;
+    if (!commonFunctions.isValidToProcess(req, res, shop.id))
+        return;
 
-    // Create Update Condition
-    const updateCondition = ` id = ${req.body.id} `;
-    let updatingShop = new Shop(req.body);
-
-    const updateResponse = await dbOperations.updateEntityByCriteria(new Shop(updatingShop), Shop.EntityName, updateCondition, req.body.id, Shop.updateRestrictedColumns);
+    const updateResponse = await dbOperations.updateOne(Shop, req.body);
 
     if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Shop Updating failed with Id:" + req.body.id}));
@@ -134,12 +131,54 @@ exports.update = async (req, res) => {
         return;
     }
 
-    logger.info('Shop Updated: Id: ' + updatingShop.id);
+    logger.info('Shop Updated: Id: ' + req.body.id);
     res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
 };
 
+exports.updateStatus = async (req, res) => {
+
+    // Validate the Request
+    if (!commonFunctions.validateRequestBody(req.body, ApiRequest.STATUS_UPDATE_API, false, res))
+        return;
+
+    const shopSearchResponse = await dbOperations.findOne(Shop, req.body.primaryId);
+
+    if (DbResponses.isSqlErrorResponse(shopSearchResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: shopSearchResponse.message || "Internal Server Error!"}));
+        return;
+    }
+    if (DbResponses.isDataNotFoundResponse(shopSearchResponse.status)) {
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " + req.body.id}));
+        return;
+    }
+    const shop = shopSearchResponse.data;
+
+    if (!commonFunctions.isValidToProcess(req, res, shop.id))
+        return;
+
+    shop.status = req.body.status;
+
+    const updateResponse = await dbOperations.updateOne(Shop, shop);
+
+    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Shop Status Updating failed with Id:" + req.body.id}));
+        return;
+    }
+    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
+        res.status(204).send();
+        return;
+    }
+
+    logger.info('Shop Status Updated: Id: ' + req.body.id);
+    res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated the shop status!"}));
+};
+
 exports.findOne = async (req, res) => {
-    const findResponse = dbOperations.findOne(Shop.EntityName, "id", req.params.shopId);
+
+    if (!commonFunctions.isValidToProcess(req, res, req.params.shopId))
+        return;
+
+    const findResponse = await dbOperations.findOne(Shop, req.params.shopId);
 
     if (DbResponses.isSqlErrorResponse(findResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: findResponse.message || "Some error occurred while retrieving Shop with Id:" + req.params.shopId}));

@@ -11,11 +11,11 @@ const ResponseFactory = require("../APIs/response/dynamic.response.factory");
 const AdminApiResponse = require("../APIs/response/admin.api.response");
 const DbResponses = require("../APIs/response/db.response.factory");
 const sessionStore = require("../shared/session.store");
-
 const logger = require("../shared/logger/logger.module")("admin.controller.js");
 
 exports.create = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, AdminApiRequest.CREATE_API, Admin.creationMandatoryColumns, false, res))
+    // Validate the Request and reformat to api format
+    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.CREATE_API, false, res))
         return;
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.userName));
@@ -60,11 +60,26 @@ exports.create = async (req, res) => {
 
 exports.update = async (req, res) => {
 
-    // Validate the Request
-    if (!commonFunctions.requestValidator(req.body, AdminApiRequest.UPDATE_API, Admin.updateMandatoryColumns, false, res))
+    // Validate the Request and reformat to api format
+    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.UPDATE_API,false, res))
         return;
 
-    const updateResponse = await dbOperations.updateOne(Admin, new Admin(req.body));
+    const adminSearchResponse = await dbOperations.findOne(Admin, req.body.id);
+
+    if (DbResponses.isSqlErrorResponse(adminSearchResponse.status)) {
+        res.status(500).send(ResponseFactory.getErrorResponse({message: adminSearchResponse.message || "Internal Server Error!"}));
+        return;
+    }
+    if (DbResponses.isDataNotFoundResponse(adminSearchResponse.status)) {
+        res.status(400).send(ResponseFactory.getErrorResponse({message: "Admin not exist with id: " + req.body.id}));
+        return;
+    }
+    const oldAdmin = adminSearchResponse.data;
+
+    if (!commonFunctions.isValidToProcess(req, res, oldAdmin.shopId))
+        return;
+
+    const updateResponse = await dbOperations.updateOne(Admin, req.body);
 
     if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
         res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Admin Updating failed with Id:" + req.body.id}));
@@ -81,7 +96,8 @@ exports.update = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    if (!commonFunctions.requestValidator(req.body, AdminApiRequest.LOGIN_REQUEST, ["userName", "password"], false, res))
+    // Validate the Request and reformat to api format
+    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.LOGIN_REQUEST, false, res))
         return;
 
     const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));

@@ -28,8 +28,6 @@ Admin.NamedQuery = {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
 };
-Admin.creationMandatoryColumns = ["userName", "password", "email", "shopId"];
-Admin.updateMandatoryColumns = ["id"];
-Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "password", "status", "systemAdmin"];
+Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "password", "systemAdmin"];
 
 module.exports = Admin;

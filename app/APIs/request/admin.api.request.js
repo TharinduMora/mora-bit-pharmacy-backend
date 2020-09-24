@@ -1,27 +1,36 @@
 AdminApiRequest = {
     CREATE_API: {
-        roleId: 0,
-        shopId: 0,
-        userName: "",
-        password: "",
-        fullName: "",
-        email: "",
-        telephone: "",
-        address: "",
-        city: "",
+        BODY: {
+            roleId: 0,
+            shopId: 0,
+            userName: "",
+            password: "",
+            fullName: "",
+            email: "",
+            telephone: "",
+            address: "",
+            city: "",
+        },
+        MandatoryColumns: ["userName", "password", "email", "shopId"]
     },
     UPDATE_API: {
-        id: 0,
-        shopId: 0,
-        roleId: 0,
-        fullName: "",
-        telephone: "",
-        address: "",
-        city: ""
+        BODY: {
+            id: 0,
+            shopId: 0,
+            roleId: 0,
+            fullName: "",
+            telephone: "",
+            address: "",
+            city: ""
+        },
+        MandatoryColumns: ["id"]
     },
     LOGIN_REQUEST: {
-        userName: "",
-        password: ""
+        BODY: {
+            userName: "",
+            password: ""
+        },
+        MandatoryColumns: ["userName", "password"]
     }
 };
 

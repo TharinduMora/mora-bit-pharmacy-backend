@@ -1,8 +1,8 @@
 const AppFunctions = require("./app.functions").APP_FUNCTIONS;
 const MainConfig = require("./main.config");
 
-exports.APP_ROLES = {
-    ROLE_1: {
+exports.APP_ROLES = [
+    {
         ID: 1,
         NAME: "Super Admin",
         TYPE: MainConfig.ADMIN_TYPES.SYSTEM_ADMIN,
@@ -20,7 +20,7 @@ exports.APP_ROLES = {
             AppFunctions.UPDATE_SHOP_STATUS.ID
         ]
     },
-    ROLE_2: {
+    {
         ID: 2,
         NAME: "Shop Admin",
         TYPE: MainConfig.ADMIN_TYPES.SHOP_ADMIN,
@@ -29,4 +29,4 @@ exports.APP_ROLES = {
             AppFunctions.UPDATE_SHOP.ID,
         ]
     }
-};
+];

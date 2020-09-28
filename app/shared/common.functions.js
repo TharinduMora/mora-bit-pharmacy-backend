@@ -67,13 +67,16 @@ exports.authValidator = (functionId) => {
         }
 
         function validateUser(req, res, next) {
-            let role = APP_ROLES["ROLE_" + req.admin.roleId];
 
-            if (!role) {
+            let roles = APP_ROLES.filter((r) => {
+                return r.ID === req.admin.roleId
+            });
+
+            if (roles.length === 0) {
                 res.status(401).send(ResponseFactory.getErrorResponse({message: "Invalid Role Id : " + req.admin.roleId}));
                 return;
             }
-
+            let role = roles[0];
             if (role.FUNCTIONS.includes(functionId)) {
                 next();
             } else {

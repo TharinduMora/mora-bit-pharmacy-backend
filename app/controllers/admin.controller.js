@@ -127,6 +127,13 @@ exports.login = async (req, res) => {
         return;
     }
     sessionStore.addAdminSession(admin.sessionId, AdminApiResponse.AdminLoginResponse(admin));
+
+    let roles = appRoles.filter((r) => {
+        return r.ID === admin.roleId
+    });
+
+    admin.functions = roles[0].FUNCTIONS;
+
     logger.info('Admin Login Success: Id: ' + admin.id + " with sessionId: " + admin.sessionId);
     res.status(200).send(ResponseFactory.getSuccessResponse({
         data: AdminApiResponse.AdminLoginResponse(admin),

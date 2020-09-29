@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const path = require('path');
 const fs = require("fs");
+const cors = require('cors');
 
 const fileUploader = require("./app/shared/file-upload/file.upload");
 const appConfig = require("./app/config/app.config");
@@ -9,6 +10,8 @@ const ResponseFactory = require("./app/APIs/response/dynamic.response.factory");
 const logger = require('./app/shared/logger/logger.module')("server.js");
 
 const app = express();
+
+app.use(cors());
 
 fs.mkdir(path.join(__dirname, appConfig.UPLOAD_FILES.DIR_NAME), {recursive: true}, function (err) {
     if (err) {

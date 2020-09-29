@@ -16,6 +16,6 @@ router.post('/findByCriteria', commonFunctions.authValidator(appFunctions.FIND_A
 
 // router.post('/transTest', admin.transTest);
 
-router.post('/login', admin.login);
+router.put('/login', admin.login);
 
 module.exports = router;

@@ -12,6 +12,7 @@ class AdminApiResponse {
         this.shopId = admin.shopId;
         this.systemAdmin = admin.systemAdmin;
         this.status = admin.status;
+        this.functions = admin.functions;
         return this;
     };
 

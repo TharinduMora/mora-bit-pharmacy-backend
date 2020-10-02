@@ -54,6 +54,7 @@ app.use("/", (req, res, next) => {
 app.use("/shop", require("./app/routes/shop.routes.js"));
 app.use("/admin", require("./app/routes/admin.routes.js"));
 app.use("/requests", require("./app/routes/api.request.routes"));
+app.use("/masterData", require("./app/routes/master.data.routes"));
 
 app.listen(appConfig.SERVER.PORT, () => {
     logger.info(`${appConfig.APP_NAME} started on port ${appConfig.SERVER.PORT}`);

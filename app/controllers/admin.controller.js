@@ -39,10 +39,14 @@ exports.create = async (req, res) => {
         address: req.body.address,
         city: req.body.city
     });
-
-    admin.systemAdmin = false;
     admin.shopId = req.body.shopId;
-    admin.roleId = appRoles.ROLE_1.ID;
+    if(req.body.shopId>1){
+        admin.systemAdmin = false;
+        admin.roleId = appRoles[1].ID;
+    }else{
+        admin.systemAdmin = true;
+        admin.roleId = appRoles[0].ID;
+    }
     admin.status = mainConfig.SYSTEM_STATUS.CREATED;
 
     const creationResponse = await dbOperations.create(Admin, admin);

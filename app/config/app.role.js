@@ -11,7 +11,7 @@ exports.APP_ROLES = [
             AppFunctions.FIND_ADMIN_BY_CRITERIA.ID,
             AppFunctions.VIEW_ADMIN_DETAILS.ID,
             AppFunctions.CREATE_ADMIN.ID,
-            AppFunctions.UPDATE_ADMIN.ID,
+            // AppFunctions.UPDATE_ADMIN.ID,
             AppFunctions.UPDATE_ADMIN_STATUS.ID,
             // Shop Functions
             AppFunctions.FIND_SHOP_BY_CRITERIA.ID,

@@ -45,7 +45,7 @@ exports.create = async (req, res) => {
     admin.userName = req.body.admin.userName;
     admin.password = req.body.admin.password;
     admin.fullName = req.body.admin.fullName;
-    admin.roleId = APP_ROLES.ROLE_2.ID;
+    admin.roleId = APP_ROLES[1].ID;
 
     const txn = dbTransaction.getTransaction();
 

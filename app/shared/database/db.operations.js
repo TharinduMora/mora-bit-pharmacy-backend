@@ -85,6 +85,24 @@ exports.findOne = function (entity, primaryId) {
     })
 };
 
+exports.findOneNew = function (entity, primaryId) {
+    return new Promise((resolve, reject) => {
+        const sqlQuery = queryGenFunctions.getFindOneQuery(entity,primaryId);
+        poolConnection.query(sqlQuery, (err, res) => {
+            if (err) {
+                logger.error("Error on find one in " + entity['EntityName'] + ". error: ", err);
+                reject(err);
+                return;
+            }
+            if (res.length) {
+                resolve(res[0]);
+                return;
+            }
+            resolve(null);
+        });
+    })
+};
+
 exports.getResultByQuery = function (SELECT_SQL) {
     return new Promise((resolve, reject) => {
         poolConnection.query(SELECT_SQL, (err, res) => {

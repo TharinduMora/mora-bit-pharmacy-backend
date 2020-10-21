@@ -39,7 +39,7 @@ exports.create = async (req, res) => {
     }
 
     let shop = new Shop(req.body);
-    shop.status = mainConfig.SYSTEM_STATUS.CREATED;
+    shop.status = mainConfig.SYSTEM_STATUS.PENDING;
 
     let admin = new Admin(req.body);
     admin.userName = req.body.admin.userName;

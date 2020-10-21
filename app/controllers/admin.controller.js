@@ -1,4 +1,5 @@
 const Admin = require("../models/admin.model");
+const Shop = require("../models/shop.model");
 const commonFunctions = require("../shared/common.functions");
 const dbOperations = require("../shared/database/db.operations");
 const searchTemplate = require("../shared/search/search.template");
@@ -40,10 +41,10 @@ exports.create = async (req, res) => {
         city: req.body.city
     });
     admin.shopId = req.body.shopId;
-    if(req.body.shopId>1){
+    if (req.body.shopId > 1) {
         admin.systemAdmin = false;
         admin.roleId = appRoles[1].ID;
-    }else{
+    } else {
         admin.systemAdmin = true;
         admin.roleId = appRoles[0].ID;
     }
@@ -65,7 +66,7 @@ exports.create = async (req, res) => {
 exports.update = async (req, res) => {
 
     // Validate the Request and reformat to api format
-    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.UPDATE_API,false, res))
+    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.UPDATE_API, false, res))
         return;
 
     const adminSearchResponse = await dbOperations.findOne(Admin, req.body.id);
@@ -100,49 +101,69 @@ exports.update = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    // Validate the Request and reformat to api format
-    if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.LOGIN_REQUEST, false, res))
-        return;
 
-    const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));
+    try {
+        // Validate the Request and reformat to api format
+        if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.LOGIN_REQUEST, false, res))
+            return;
 
-    if (DbResponses.isSqlErrorResponse(ResultResponse.status)) {
+        const ResultResponse = await dbOperations.getResultByQuery(Admin.NamedQuery.getAdminByUserNameAndPassword(req.body.userName, req.body.password));
+
+        if (DbResponses.isSqlErrorResponse(ResultResponse.status)) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+            return;
+        }
+        if (DbResponses.isDataNotFoundResponse(ResultResponse.status)) {
+            res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
+            return;
+        }
+
+        let admin = new Admin(ResultResponse.data[0]);
+        // admin.id = ResultResponse.data[0].id;
+        admin.sessionId = commonFunctions.getSessionId();
+
+        try {
+            const shop = await dbOperations.findOneNew(Shop, admin.shopId);
+            if (!shop) {
+                res.status(400).send(ResponseFactory.getErrorResponse({message: "Invalid Shop"}));
+                return;
+            }
+            if (shop.status !== mainConfig.SYSTEM_STATUS.APPROVED) {
+                res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not approved"}));
+                return;
+            }
+        } catch (e) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error in catch"}));
+            return;
+        }
+
+        const updateResponse = dbOperations.updateOne(Admin, admin);
+
+        if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
+            return;
+        }
+        if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
+            res.status(204).send();
+            return;
+        }
+        sessionStore.addAdminSession(admin.sessionId, AdminApiResponse.AdminLoginResponse(admin));
+
+        let roles = appRoles.filter((r) => {
+            return r.ID === admin.roleId
+        });
+
+        admin.functions = roles[0].FUNCTIONS;
+
+        logger.info('Admin Login Success: Id: ' + admin.id + " with sessionId: " + admin.sessionId);
+        res.status(200).send(ResponseFactory.getSuccessResponse({
+            data: AdminApiResponse.AdminLoginResponse(admin),
+            message: 'Login Success'
+        }))
+    } catch (e) {
+        logger.error(e);
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-        return;
     }
-    if (DbResponses.isDataNotFoundResponse(ResultResponse.status)) {
-        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalid username/password'}));
-        return;
-    }
-
-    let admin = new Admin(ResultResponse.data[0]);
-    // admin.id = ResultResponse.data[0].id;
-    admin.sessionId = commonFunctions.getSessionId();
-
-    // const updateResponse = dbOperations.updateEntity(admin, Admin.EntityName, `id = ${admin.id}`, admin.id, Admin.updateRestrictedColumns);
-    const updateResponse = dbOperations.updateOne(Admin, admin);
-
-    if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
-        res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
-        return;
-    }
-    if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
-        res.status(204).send();
-        return;
-    }
-    sessionStore.addAdminSession(admin.sessionId, AdminApiResponse.AdminLoginResponse(admin));
-
-    let roles = appRoles.filter((r) => {
-        return r.ID === admin.roleId
-    });
-
-    admin.functions = roles[0].FUNCTIONS;
-
-    logger.info('Admin Login Success: Id: ' + admin.id + " with sessionId: " + admin.sessionId);
-    res.status(200).send(ResponseFactory.getSuccessResponse({
-        data: AdminApiResponse.AdminLoginResponse(admin),
-        message: 'Login Success'
-    }))
 };
 
 

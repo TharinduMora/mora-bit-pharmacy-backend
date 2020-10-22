@@ -169,8 +169,8 @@ exports.updateStatus = async (req, res) => {
         return;
     }
 
-    logger.info('Shop Status Updated: Id: ' + req.body.id);
-    res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated the shop status!"}));
+    logger.info('Shop Status Updated: Id: ' + req.body.primaryId);
+    res.send(ResponseFactory.getSuccessResponse({id: req.body.primaryId, message: "Successfully Updated the shop status!"}));
 };
 
 exports.findOne = async (req, res) => {

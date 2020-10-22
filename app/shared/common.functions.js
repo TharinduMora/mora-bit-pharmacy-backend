@@ -4,6 +4,7 @@ const {APP_ROLES} = require("../../app/config/app.role");
 const dbOperations = require("./database/db.operations");
 const Admin = require("../models/admin.model");
 const ResponseFactory = require("../APIs/response/dynamic.response.factory");
+const DbResponses = require("../APIs/response/db.response.factory");
 
 exports.validateRequestBody = function (reqBody, requestApi, blankValues, res) {
     if (!reqBody) {
@@ -115,3 +116,10 @@ exports.getSessionId = function () {
     }
     return result;
 };
+
+exports.processDBResponse = (res,dbResponse)=>{
+    if(DbResponses.isSqlErrorResponse(dbResponse.status)){
+        res.status(500).send(ResponseFactory.getErrorResponse({message: dbResponse.message || "Internal Server Error"}));
+        return null;
+    }
+}

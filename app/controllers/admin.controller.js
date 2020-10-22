@@ -69,6 +69,10 @@ exports.update = async (req, res) => {
     if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.UPDATE_API, false, res))
         return;
 
+    if (!req.admin.systemAdmin && req.admin.id !== req.body.id) {
+        res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalidate User to current action.'}));
+    }
+
     const adminSearchResponse = await dbOperations.findOne(Admin, req.body.id);
 
     if (DbResponses.isSqlErrorResponse(adminSearchResponse.status)) {
@@ -101,7 +105,6 @@ exports.update = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-
     try {
         // Validate the Request and reformat to api format
         if (!commonFunctions.validateRequestBody(req.body, AdminApiRequest.LOGIN_REQUEST, false, res))
@@ -119,34 +122,32 @@ exports.login = async (req, res) => {
         }
 
         let admin = new Admin(ResultResponse.data[0]);
-        // admin.id = ResultResponse.data[0].id;
         admin.sessionId = commonFunctions.getSessionId();
 
-        try {
-            const shop = await dbOperations.findOneNew(Shop, admin.shopId);
-            if (!shop) {
-                res.status(400).send(ResponseFactory.getErrorResponse({message: "Invalid Shop"}));
-                return;
-            }
-            if (shop.status !== mainConfig.SYSTEM_STATUS.APPROVED) {
-                res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not approved"}));
-                return;
-            }
-        } catch (e) {
-            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error in catch"}));
+        const shopResponse = await dbOperations.findOne(Shop, admin.shopId);
+        if (DbResponses.isSqlErrorResponse(shopResponse.status)) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: shopResponse.message || "Internal Server Error"}));
+            return;
+        } else if (DbResponses.isDataNotFoundResponse(shopResponse.status)) {
+            res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop Not Found"}));
+            return;
+        } else if (shopResponse.data && shopResponse.data.status !== mainConfig.SYSTEM_STATUS.APPROVED) {
+            res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not approved"}));
             return;
         }
 
-        const updateResponse = dbOperations.updateOne(Admin, admin);
+        const updateResponse = await dbOperations.updateOne(Admin, admin);
 
         if (DbResponses.isSqlErrorResponse(updateResponse.status)) {
             res.status(500).send(ResponseFactory.getErrorResponse({message: updateResponse.message || "Internal Server Error"}));
             return;
         }
         if (DbResponses.isDataNotFoundResponse(updateResponse.status)) {
+            logger.error("Session Id Updating failed. AdminId :" + admin.id);
             res.status(204).send();
             return;
         }
+
         sessionStore.addAdminSession(admin.sessionId, AdminApiResponse.AdminLoginResponse(admin));
 
         let roles = appRoles.filter((r) => {
@@ -165,7 +166,6 @@ exports.login = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
     }
 };
-
 
 exports.findOne = async (req, res) => {
     const findResponse = dbOperations.findOne(Admin, req.params.adminId);

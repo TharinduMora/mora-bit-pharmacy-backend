@@ -46,3 +46,28 @@ VALUES (0, 1, 1, 2, 1,
         null, 'superAdmin@smartpharmacy.lk',
         null, null, null, null);
 
+CREATE TABLE product
+(
+    id             int          NOT NULL AUTO_INCREMENT,
+    shopId         int          DEFAULT 0,
+    status         int          DEFAULT 0,
+    stockAvailable tinyint(1)   DEFAULT 0,
+    name           varchar(255) NOT NULL,
+    description    varchar(255) DEFAULT NULL,
+    image          varchar(255) DEFAULT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (shopId) REFERENCES shop (id)
+);
+
+CREATE TABLE product_inventory
+(
+    productId         int NOT NULL,
+    shopId            int        DEFAULT 0,
+    status            int        DEFAULT 0,
+    availableQuantity int        DEFAULT 0,
+    price             double     DEFAULT 0,
+    PRIMARY KEY (productId),
+    FOREIGN KEY (shopId) REFERENCES shop (id),
+    FOREIGN KEY (productId) REFERENCES product (id)
+);
+

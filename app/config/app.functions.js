@@ -10,6 +10,10 @@ exports.APP_FUNCTIONS = {
     VIEW_SHOP_DETAILS: {ID: 21, NAME: 'Shop -> View Details', DESCRIPTION: 'Shop -> View Details'},
     CREATE_SHOP: {ID: 22, NAME: 'Shop -> Create', DESCRIPTION: 'Shop -> Create'},
     UPDATE_SHOP: {ID: 23, NAME: 'Shop -> Update', DESCRIPTION: 'Shop -> Update'},
-    UPDATE_SHOP_STATUS: {ID: 24, NAME: 'Shop -> Update Status', DESCRIPTION: 'Shop -> Update Status'}
+    UPDATE_SHOP_STATUS: {ID: 24, NAME: 'Shop -> Update Status', DESCRIPTION: 'Shop -> Update Status'},
+
+    FIND_PRODUCT_BY_CRITERIA: {ID: 30, NAME: 'Product -> Find By Criteria', DESCRIPTION: 'Product -> Find By Criteria'},
+    VIEW_PRODUCT_DETAILS: {ID: 31, NAME: 'Product -> View Details', DESCRIPTION: 'Product -> View Details'},
+    CREATE_PRODUCT: {ID: 32, NAME: 'Product -> Create', DESCRIPTION: 'Product -> Create'},
 
 };

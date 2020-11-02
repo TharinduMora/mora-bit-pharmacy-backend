@@ -11,7 +11,7 @@ module.exports = {
     },
 
     SERVER: {
-        PORT: 3000
+        PORT: 3010
     },
 
     PAGINATION: {

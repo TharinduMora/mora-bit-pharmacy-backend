@@ -110,7 +110,7 @@ exports.findByCriteria = (req, res) => {
         };
 
         let searchReq = new SearchRequest(req.body);
-        searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, MAPPER, searchReq, res);
+        searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, null, searchReq, res);
     } catch (e) {
         logger.error(e);
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));

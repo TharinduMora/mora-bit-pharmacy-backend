@@ -28,7 +28,8 @@ exports.APP_ROLES = [
         FUNCTIONS: [
             AppFunctions.VIEW_SHOP_DETAILS.ID,
             AppFunctions.UPDATE_SHOP.ID,
-            AppFunctions.CREATE_PRODUCT.ID
+            AppFunctions.CREATE_PRODUCT.ID,
+            AppFunctions.FIND_PRODUCT_BY_CRITERIA.ID
         ]
     }
 ];

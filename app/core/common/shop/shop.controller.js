@@ -170,7 +170,10 @@ exports.updateStatus = async (req, res) => {
     }
 
     logger.info('Shop Status Updated: Id: ' + req.body.primaryId);
-    res.send(ResponseFactory.getSuccessResponse({id: req.body.primaryId, message: "Successfully Updated the shop status!"}));
+    res.send(ResponseFactory.getSuccessResponse({
+        id: req.body.primaryId,
+        message: "Successfully Updated the shop status!"
+    }));
 };
 
 exports.findOne = async (req, res) => {
@@ -198,7 +201,7 @@ exports.findAll = (req, res) => {
     let FILTER = ``;
     let COLUMN_MAP = [];
 
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, new SearchRequest({}), res);
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, null, new SearchRequest({}), res);
 };
 
 exports.findByCriteria = (req, res) => {
@@ -219,7 +222,7 @@ exports.findByCriteria = (req, res) => {
 
     let searchReq = new SearchRequest(req.body);
 
-    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
+    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, null, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER,COLUMN_MAP, searchReq, res);
 };
 

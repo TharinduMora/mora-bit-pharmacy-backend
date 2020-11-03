@@ -11,7 +11,7 @@ exports.getShopList = async (req, res) => {
     let FILTER = ``;
     let COLUMN_MAP = [];
 
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, new SearchRequest({}), res);
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP,null, new SearchRequest({}), res);
 }
 
 exports.getRoleList = async (req, res) => {

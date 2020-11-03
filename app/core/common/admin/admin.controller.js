@@ -188,7 +188,7 @@ exports.findAll = (req, res) => {
     let FILTER = ``;
     let COLUMN_MAP = [];
 
-    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, new SearchRequest({}), res);
+    searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP,null, new SearchRequest({}), res);
 };
 
 exports.findByCriteria = (req, res) => {
@@ -205,6 +205,6 @@ exports.findByCriteria = (req, res) => {
 
     let searchReq = new SearchRequest(req.body);
 
-    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res);
+    searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP,null, searchReq, res);
     // searchTemplate.dynamicDataOnlySearch(SELECT_SQL, FILTER,COLUMN_MAP, searchReq, res);
 };

@@ -1,3 +1,5 @@
+const ProductCreationResponse = require("./product.api.response").ProductCreationResponse;
+
 const Product = require("../../models/product.model");
 const ProductInventory = require("../../models/product.inventory.model");
 const commonFunctions = require("../../shared/common.functions");
@@ -75,7 +77,7 @@ exports.create = async (req, res) => {
 
         logger.info("Product Created. Id: " + product.id);
         res.send(ResponseFactory.getSuccessResponse({
-            data: {...product, price: productInventory.price},
+            data: ProductCreationResponse({...product, price: productInventory.price}),
             message: "Product Created"
         }));
     } catch (e) {
@@ -83,4 +85,34 @@ exports.create = async (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
     }
 
+};
+
+exports.findByCriteria = (req, res) => {
+    try {
+        if (!commonFunctions.isValidToProcess(req, res, req.body.shopId))
+            return;
+
+        let SELECT_SQL = `SELECT * FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
+        let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
+        let FILTER = ' AND A.shopId = ' + req.body.shopId;
+        let COLUMN_MAP = {
+            name: "A.name"
+        };
+        let MAPPER = {
+            id: "id",
+            shopId: "shopId",
+            status: "status",
+            stockAvailable: "stockAvailable",
+            name: "name",
+            description: "description",
+            image: "image",
+            price: "price"
+        };
+
+        let searchReq = new SearchRequest(req.body);
+        searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, MAPPER, searchReq, res);
+    } catch (e) {
+        logger.error(e);
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+    }
 };

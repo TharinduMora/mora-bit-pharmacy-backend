@@ -65,7 +65,8 @@ function appendCondition(key, operator, value, where) {
     switch (operator) {
         case "=":
         case "eq": {
-            if (value.constructor === Number) {s
+            if (value.constructor === Number) {
+                s
                 where = where + ` AND ${key} = ${value}`;
             } else if (value.constructor === String) {
                 if (value === "true" || value === "false")
@@ -131,7 +132,29 @@ function appendCondition(key, operator, value, where) {
     return where;
 }
 
-exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, res) => {
+function formatFinalResult(resultSet, mapper) {
+    if (resultSet.length === 0) {
+        return [];
+    }
+    if (mapper === null || mapper === undefined) {
+        return resultSet;
+    }
+    let out = [];
+    resultSet.forEach((result) => {
+        let fo = {};
+        Object.keys(mapper).forEach((key) => {
+            if (result.hasOwnProperty(mapper[key])) {
+                fo[key] = result[mapper[key]];
+            }
+        });
+        out.push(fo);
+    });
+    return out;
+}
+
+exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, OUTPUT_MAPPER, searchReq, res) => {
+    // COLUMN_MAP using in dynamic filter. ex -> { name : "A.name" }
+    // OUTPUT_MAPPER is use to format output result. ex -> { name_to_output : "name_in_db_result" }
     searchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, searchReq, (err, searchResult) => {
         if (err) {
             if (err.kind === "not_found") {
@@ -146,13 +169,14 @@ exports.dynamicSearchWithCount = (SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, sea
                 offset: searchReq.offset,
                 limit: searchReq.limit,
                 recordCount: searchResult.ct,
-                data: searchResult.data
+                // data: searchResult.data,
+                data: formatFinalResult(searchResult.data, OUTPUT_MAPPER)
             }));
         }
     })
 };
 
-exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, COLUMN_MAP, searchReq, res) => {
+exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, COLUMN_MAP, OUTPUT_MAPPER, searchReq, res) => {
     dataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, searchReq, (err, searchResult) => {
         if (err) {
             if (err.kind === "not_found") {
@@ -164,7 +188,8 @@ exports.dynamicDataOnlySearch = (SELECT_SQL, FILTER, COLUMN_MAP, searchReq, res)
             }));
         } else {
             res.send(ResponseFactory.getSearchResponse({
-                data: searchResult.data
+                data: formatFinalResult(searchResult.data, OUTPUT_MAPPER)
+                // data: searchResult.data
             }));
         }
     })

@@ -14,11 +14,11 @@ ProductApiRequest = {
         BODY: {
             id: 0,
             shopId: 0,
-            status: 0,
             stockAvailable: 0,
             name: "",
             description: "",
-            image: ""
+            image: "",
+            price:0
         },
         MandatoryColumns: ["id"]
     },

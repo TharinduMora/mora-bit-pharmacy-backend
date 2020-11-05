@@ -102,7 +102,7 @@ exports.create = async (req, res) => {
 };
 
 exports.createEM = async (req, res) => {
-    try{
+    try {
         if (!commonFunctions.validateRequestBody(req.body, ShopApiRequest.CREATE_API, false, res))
             return;
 
@@ -113,10 +113,6 @@ exports.createEM = async (req, res) => {
 
         const AdminList = await EntityManager.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.admin.userName));
 
-        if (AdminList === null) {
-            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-            return;
-        }
         if (AdminList.length > 0) {
             logger.info("User Name already exist. username: " + req.body.admin.userName);
             res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
@@ -136,35 +132,20 @@ exports.createEM = async (req, res) => {
 
         shop = await txn.persist(Shop, shop);
 
-        if (shop === null) {
-            logger.error( "Error in shop persist")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
-            return;
-        }
         admin.shopId = shop.id;
 
-        admin = await txn.persist(Admin, admin);
+        await txn.persist(Admin, admin);
+        await txn.commit();
 
-        if (admin === null) {
-            logger.error( "Error in admin persist")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
-            return;
-        }
+        logger.info("Shop Created. Id: " + shop.id);
 
-        const emResponse = await txn.commit();
+        res.send(ResponseFactory.getSuccessResponse({
+            data: ShopApiResponse.ShopCreationResponse(shop),
+            message: "Shop Created"
+        }));
 
-        if (EntityManager.isSuccessResponse(emResponse)) {
-            logger.info("Shop Created. Id: " + shop.id);
-            res.send(ResponseFactory.getSuccessResponse({
-                data: ShopApiResponse.ShopCreationResponse(shop),
-                message: "Shop Created"
-            }));
-        }else{
-            logger.error("Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
-        }
-
-    }catch (e){
+    } catch (e) {
+        logger.error(e || null);
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
     }
 

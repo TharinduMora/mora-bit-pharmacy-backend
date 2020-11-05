@@ -5,79 +5,74 @@ const logger = mySqlConfig.getLogger()('entity-manager.js');
 
 class EntityManager {
 
-    getTransaction(){
+    getTransaction() {
         return transaction.getTransaction();
     }
 
-    async updateOne(entity, updatingObject){
-        return new Promise((resolve,reject)=>{
-            poolOps.updateOne(entity, updatingObject).then((result =>{
-                if(result.status === mySqlConfig.STATUS.SQL_ERROR){
+    async updateOne(entity, updatingObject) {
+        return new Promise((resolve, reject) => {
+            poolOps.updateOne(entity, updatingObject).then((result => {
+                if (result.status === mySqlConfig.STATUS.SQL_ERROR) {
                     logger.error(result.data);
-                    reject(null);
-                }else if(result.status === mySqlConfig.STATUS.NOT_FOUND_ERR){
+                    reject(result.data || null);
+                } else if (result.status === mySqlConfig.STATUS.NOT_FOUND_ERR) {
                     resolve(null);
-                }else if(result.status === mySqlConfig.STATUS.SUCCESS){
+                } else if (result.status === mySqlConfig.STATUS.SUCCESS) {
                     resolve(result.data);
-                }else{
+                } else {
                     resolve(null);
                 }
             }))
         })
     }
 
-    async findOne(entity, primaryId){
-        return new Promise((resolve,reject)=>{
-            poolOps.findOne(entity, primaryId).then((result =>{
-                if(result.status === mySqlConfig.STATUS.SQL_ERROR){
+    async findOne(entity, primaryId) {
+        return new Promise((resolve, reject) => {
+            poolOps.findOne(entity, primaryId).then((result => {
+                if (result.status === mySqlConfig.STATUS.SQL_ERROR) {
                     logger.error(result.data);
-                    reject(null);
-                }else if(result.status === mySqlConfig.STATUS.NOT_FOUND_ERR){
+                    reject(result.data || null);
+                } else if (result.status === mySqlConfig.STATUS.NOT_FOUND_ERR) {
                     resolve(null);
-                }else if(result.status === mySqlConfig.STATUS.SUCCESS){
+                } else if (result.status === mySqlConfig.STATUS.SUCCESS) {
                     resolve(result.data);
-                }else{
+                } else {
                     resolve(null);
                 }
             }))
         })
     }
 
-    async getResultByQuery(QUERY){
-        return new Promise((resolve,reject)=>{
-            poolOps.getResultByQuery(QUERY).then((result =>{
-                if(result.status === mySqlConfig.STATUS.SQL_ERROR){
+    async getResultByQuery(QUERY) {
+        return new Promise((resolve, reject) => {
+            poolOps.getResultByQuery(QUERY).then((result => {
+                if (result.status === mySqlConfig.STATUS.SQL_ERROR) {
                     logger.error(result.data + '\t QUERY => ' + QUERY);
-                    // resolve(null);
-                    reject(null);
-                }else if(result.status === mySqlConfig.STATUS.NOT_FOUND_ERR){
+                    reject(result.data || null);
+                } else if (result.status === mySqlConfig.STATUS.NOT_FOUND_ERR) {
                     resolve([]);
-                }else if(result.status === mySqlConfig.STATUS.SUCCESS){
+                } else if (result.status === mySqlConfig.STATUS.SUCCESS) {
                     resolve(result.data);
-                }else{
+                } else {
                     resolve(null);
                 }
             }))
         })
     }
 
-    async insertOne(entity,entityObject){
-        return new Promise((resolve,reject)=>{
-            poolOps.insertOne(entity,entityObject).then((result =>{
-                if(result.status === mySqlConfig.STATUS.SQL_ERROR){
+    async insertOne(entity, entityObject) {
+        return new Promise((resolve, reject) => {
+            poolOps.insertOne(entity, entityObject).then((result => {
+                if (result.status === mySqlConfig.STATUS.SQL_ERROR) {
                     logger.error(result.data);
-                    reject(null);
-                }else if(result.status === mySqlConfig.STATUS.SUCCESS){
+                    reject(result.data || null);
+                } else if (result.status === mySqlConfig.STATUS.SUCCESS) {
                     resolve(result.data);
-                }else{
+                } else {
                     resolve(null);
                 }
             }))
         })
-    }
-
-    isSuccessResponse(response){
-        return !!(response.status && response.status === mySqlConfig.STATUS.SUCCESS);
     }
 }
 

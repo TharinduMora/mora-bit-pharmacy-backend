@@ -19,7 +19,7 @@ Admin.EntityName = "admin";
 Admin.PrimaryKey = "id";
 Admin.NamedQuery = {
     getAdminByUserName(userName) {
-        return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}'`
+        return `SELECT * FROM  ${Admin.EntityName} WHEREa userName = '${userName}'`
     },
     getAdminBySessionId(sessionId) {
         return `SELECT * FROM  ${Admin.EntityName} WHERE sessionId = '${sessionId}'`

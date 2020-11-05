@@ -15,5 +15,8 @@ module.exports = {
         this.status = data.status;
         this.data = data.data;
         return data;
+    },
+    getLogger(){
+        return require("../../../core/shared/logger/logger.module");
     }
 }

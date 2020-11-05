@@ -17,6 +17,8 @@ const APP_ROLES = require("../../../config/app.role").APP_ROLES;
 
 const logger = require("../../shared/logger/logger.module")("shop.controller.js");
 
+const EntityManager = require("../../../modules/database/mysql/api/entity.manager")
+
 exports.create = async (req, res) => {
     if (!commonFunctions.validateRequestBody(req.body, ShopApiRequest.CREATE_API, false, res))
         return;
@@ -97,6 +99,75 @@ exports.create = async (req, res) => {
         data: ShopApiResponse.ShopCreationResponse(shop),
         message: "Shop Created"
     }));
+};
+
+exports.createEM = async (req, res) => {
+    try{
+        if (!commonFunctions.validateRequestBody(req.body, ShopApiRequest.CREATE_API, false, res))
+            return;
+
+        if (!(req.body.admin && req.body.admin.userName)) {
+            res.status(400).send(ResponseFactory.getErrorResponse({message: 'user name required'}))
+            return;
+        }
+
+        const AdminList = await EntityManager.getResultByQuery(Admin.NamedQuery.getAdminByUserName(req.body.admin.userName));
+
+        if (AdminList === null) {
+            res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+            return;
+        }
+        if (AdminList.length > 0) {
+            logger.info("User Name already exist. username: " + req.body.admin.userName);
+            res.status(400).send(ResponseFactory.getErrorResponse({message: 'User Name already exist'}));
+            return;
+        }
+
+        let shop = new Shop(req.body);
+        shop.status = mainConfig.SYSTEM_STATUS.PENDING;
+
+        let admin = new Admin(req.body);
+        admin.userName = req.body.admin.userName;
+        admin.password = req.body.admin.password;
+        admin.fullName = req.body.admin.fullName;
+        admin.roleId = APP_ROLES[1].ID;
+
+        const txn = EntityManager.getTransaction();
+
+        shop = await txn.persist(Shop, shop);
+
+        if (shop === null) {
+            logger.error( "Error in shop persist")
+            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
+            return;
+        }
+        admin.shopId = shop.id;
+
+        admin = await txn.persist(Admin, admin);
+
+        if (admin === null) {
+            logger.error( "Error in admin persist")
+            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
+            return;
+        }
+
+        const emResponse = await txn.commit();
+
+        if (EntityManager.isSuccessResponse(emResponse)) {
+            logger.info("Shop Created. Id: " + shop.id);
+            res.send(ResponseFactory.getSuccessResponse({
+                data: ShopApiResponse.ShopCreationResponse(shop),
+                message: "Shop Created"
+            }));
+        }else{
+            logger.error("Internal Server Error!")
+            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
+        }
+
+    }catch (e){
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+    }
+
 };
 
 exports.update = async (req, res) => {

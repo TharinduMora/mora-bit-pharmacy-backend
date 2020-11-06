@@ -4,10 +4,10 @@ const path = require('path');
 const fs = require("fs");
 const cors = require('cors');
 
-const fileUploader = require("./app/core/shared/file-upload/file.upload");
+const fileUploader = require("./app/shared/file-upload/file.upload");
 const appConfig = require("./app/config/app.config");
-const ResponseFactory = require("./app/core/shared/API/response/dynamic.response.factory");
-const logger = require('./app/core/shared/logger/logger.module')("server.js");
+const ResponseFactory = require("./app/business-module/common/api/response/dynamic.response.factory");
+const logger = require('./app/shared/logger/logger.module')("server.js");
 
 const app = express();
 
@@ -52,16 +52,16 @@ app.use("/", (req, res, next) => {
     next();
 });
 
-// app.use("/shop", require("./app/routes/shop.routes.js"));
-// app.use("/admin", require("./app/routes/admin.routes.js"));
+app.use("/shop", require("./app/business-module/core/shop/shop.routes.js"));
+app.use("/admin", require("./app/business-module/core/admin/admin.routes.js"));
 // app.use("/requests", require("./app/routes/api.request.routes"));
 // app.use("/masterData", require("./app/routes/master.data.routes"));
-// app.use("/product", require("./app/routes/product.routes"));
+// app.use("/product", require("./app/business-module/core/product/product.routes"));
 
-app.use("/shop", require("./app/core/common/shop/shop.routes.js"));
-app.use("/admin", require("./app/core/common/admin/admin.routes.js"));
-app.use("/masterData", require("./app/core/common/masterdata/master.data.routes"));
-app.use("/product", require("./app/core/common/product/product.routes"));
+// app.use("/shop", require("./app/shared/common/shop/shop.routes.js"));
+// app.use("/admin", require("./app/shared/common/admin/admin.routes.js"));
+// app.use("/masterData", require("./app/shared/common/masterdata/master.data.routes"));
+// app.use("/product", require("./app/shared/common/product/product.routes"));
 
 app.listen(appConfig.SERVER.PORT, () => {
     logger.info(`${appConfig.APP_NAME} started on port ${appConfig.SERVER.PORT}`);

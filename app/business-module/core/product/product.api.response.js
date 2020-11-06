@@ -1,0 +1,11 @@
+exports.ProductCreationResponse= function (data) {
+    this.id = data.id || 0;
+    this.shopId = data.shopId || 0;
+    this.status = data.status || 0;
+    this.stockAvailable = data.stockAvailable || null;
+    this.name = data.name || null;
+    this.description = data.description || null;
+    this.image = data.image || null;
+    this.price = data.price || 0;
+};
+

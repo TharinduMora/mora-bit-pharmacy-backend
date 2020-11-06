@@ -67,14 +67,15 @@ exports.updateStatus = async (req, res) => {
         if (!commonFunctions.validateRequestBody(req.body, ApiRequest.STATUS_UPDATE_API, false, res))
             return;
 
+        if (!commonFunctions.isValidToProcess(req, res, req.body.shopId))
+            return;
+
         let product = await EntityManager.findOne(Product, req.body.primaryId);
 
         if (!product) {
             res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " + req.body.id}));
             return;
         }
-        if (!commonFunctions.isValidToProcess(req, res, product.shopId))
-            return;
 
         product.status = req.body.status;
 

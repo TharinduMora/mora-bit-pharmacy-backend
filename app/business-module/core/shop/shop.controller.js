@@ -114,14 +114,15 @@ exports.updateStatus = async (req, res) => {
         if (!commonFunctions.validateRequestBody(req.body, ApiRequest.STATUS_UPDATE_API, false, res))
             return;
 
+        if (!commonFunctions.isValidToProcess(req, res, req.body.shopId))
+            return;
+
         let shop = await EntityManager.findOne(Shop, req.body.primaryId);
 
         if (!shop) {
             res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " + req.body.id}));
             return;
         }
-        if (!commonFunctions.isValidToProcess(req, res, shop.id))
-            return;
 
         shop.status = req.body.status;
 
@@ -203,37 +204,3 @@ exports.findByCriteria = (req, res) => {
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
     }
 };
-
-// exports.createSh = (req, res) => {
-//
-//     let transactionalQueryList = [];
-//
-//     const admin = new Admin({
-//         userName: "Test",
-//         password: "Test",
-//         email: "Test Trans",
-//         telephone: "Test",
-//         address: "Test",
-//         city: "Test"
-//     });
-//
-//     // passing queryId is must for getting result object
-//     const AdminUpdateQuery = dbQueryGenFunctions.getUpdateQuery(1, new Admin(req.body), Admin.EntityName, ` id = ${req.body.id} `, req.body.id, Admin.updateRestrictedColumns);
-//     const AdminInsertQuery = dbQueryGenFunctions.getInsertQuery(2, Admin.EntityName, admin);
-//
-//     transactionalQueryList.push(AdminInsertQuery, AdminUpdateQuery);
-//
-//     dbOperations.executeAsTransaction(transactionalQueryList, 'resMap_', (err, result) => {
-//         if (err) {
-//             res.status(500).send(err);
-//         } else {
-//             if (result['resMap_' + 2]) {
-//                 let newAdmin = {...admin};
-//                 newAdmin.id = result['resMap_' + 2].insertId;
-//                 res.send(newAdmin);
-//                 return;
-//             }
-//             res.send("Success");
-//         }
-//     })
-// };

@@ -5,6 +5,7 @@ const Admin = require("../models/admin.model");
 const ResponseFactory = require("./api/response/dynamic.response.factory");
 
 const EntityManager = require("../../shared/database/mysql/api/entity.manager");
+const logger = require("../../shared/logger/logger.module")("common.function.js")
 
 exports.validateRequestBody = function (reqBody, requestApi, blankValues, res) {
     if (!reqBody) {
@@ -55,45 +56,37 @@ exports.authValidator = (functionId) => {
                 if (result.length === 0) {
                     res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
                 } else {
-                    const admin = result.data[0];
+                    const admin = result[0];
                     sessionStore.addAdminSession(admin.sessionId, admin);
                     req.admin = admin;
                     validateUser(req, res, next);
                 }
             }).catch((error) => {
+                logger.error(error);
                 res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
             });
-            // dbOperations.getResultByQueryAsCallback(Admin.NamedQuery.getAdminBySessionId(sessionId), (err, result) => {
-            //     if (err) {
-            //         if (err.kind === 'not_found') {
-            //             res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
-            //             return;
-            //         }
-            //         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
-            //     } else if (result) {
-            //         const admin = result.data[0];
-            //         sessionStore.addAdminSession(admin.sessionId, admin);
-            //         req.admin = admin;
-            //         validateUser(req, res, next);
-            //     }
-            // })
         }
 
         function validateUser(req, res, next) {
 
-            let roles = APP_ROLES.filter((r) => {
-                return r.ID === req.admin.roleId
-            });
+            try{
+                let roles = APP_ROLES.filter((r) => {
+                    return r.ID === req.admin.roleId
+                });
 
-            if (roles.length === 0) {
-                res.status(401).send(ResponseFactory.getErrorResponse({message: "Invalid Role Id : " + req.admin.roleId}));
-                return;
-            }
-            let role = roles[0];
-            if (role.FUNCTIONS.includes(functionId)) {
-                next();
-            } else {
-                res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+                if (roles.length === 0) {
+                    res.status(401).send(ResponseFactory.getErrorResponse({message: "Invalid Role Id : " + req.admin.roleId}));
+                    return;
+                }
+                let role = roles[0];
+                if (role.FUNCTIONS.includes(functionId)) {
+                    next();
+                } else {
+                    res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
+                }
+            }catch(error) {
+                logger.error(error);
+                res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
             }
         }
     }
@@ -128,10 +121,3 @@ exports.getSessionId = function () {
     }
     return result;
 };
-
-// exports.processDBResponse = (res, dbResponse) => {
-//     if (DbResponses.isSqlErrorResponse(dbResponse.status)) {
-//         res.status(500).send(ResponseFactory.getErrorResponse({message: dbResponse.message || "Internal Server Error"}));
-//         return null;
-//     }
-// }

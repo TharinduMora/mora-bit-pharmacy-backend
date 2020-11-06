@@ -54,14 +54,7 @@ app.use("/", (req, res, next) => {
 
 app.use("/shop", require("./app/business-module/core/shop/shop.routes.js"));
 app.use("/admin", require("./app/business-module/core/admin/admin.routes.js"));
-// app.use("/requests", require("./app/routes/api.request.routes"));
-// app.use("/masterData", require("./app/routes/master.data.routes"));
-// app.use("/product", require("./app/business-module/core/product/product.routes"));
-
-// app.use("/shop", require("./app/shared/common/shop/shop.routes.js"));
-// app.use("/admin", require("./app/shared/common/admin/admin.routes.js"));
-// app.use("/masterData", require("./app/shared/common/masterdata/master.data.routes"));
-// app.use("/product", require("./app/shared/common/product/product.routes"));
+app.use("/product", require("./app/business-module/core/product/product.routes"));
 
 app.listen(appConfig.SERVER.PORT, () => {
     logger.info(`${appConfig.APP_NAME} started on port ${appConfig.SERVER.PORT}`);

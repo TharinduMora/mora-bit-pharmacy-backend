@@ -2,17 +2,17 @@ const ProductCreationResponse = require("./product.api.response").ProductCreatio
 
 const Product = require("../../models/product.model");
 const ProductInventory = require("../../models/product.inventory.model");
-const commonFunctions = require("../../shared/common.functions");
-const dbOperations = require("../../shared/database/db.operations");
-const searchTemplate = require("../../shared/search/search.template");
-const SearchRequest = require("../../shared/search/SearchRequest");
 const mainConfig = require("../../../config/main.config");
 const ProductApiRequest = require("./product.api.request");
-const ResponseFactory = require("../../shared/API/response/dynamic.response.factory");
-const DbResponses = require("../../shared/API/response/db.response.factory");
-const logger = require("../../shared/logger/logger.module")("product.controller.js");
 
-const dbTransaction = require("../../shared/database/db.transaction.chain");
+const commonFunctions = require("../../common/common.functions");
+const searchTemplate = require("../../common/search/search.template");
+const SearchRequest = require("../../common/search/SearchRequest");
+const ApiRequest = require("../../common/api/request/common.api.request");
+const ResponseFactory = require("../../common/api/response/dynamic.response.factory");
+const EntityManager = require("../../../shared/database/mysql/api/entity.manager")
+
+const logger = require("../../../shared/logger/logger.module")("product.controller.js");
 
 exports.create = async (req, res) => {
 
@@ -33,47 +33,20 @@ exports.create = async (req, res) => {
         product.shopId = req.body.shopId;
         product.status = mainConfig.SYSTEM_STATUS.PENDING;
 
-        const txn = dbTransaction.getTransaction();
-
-        const productResponse = await txn.persist(Product, product);
-
-        if (DbResponses.isSqlErrorResponse(productResponse.status)) {
-            logger.error(productResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
-
-        product = productResponse.data;
-
         let productInventory = new ProductInventory({
             price: req.body.price
         });
 
-        if (product && product.id > 0) {
-            productInventory.productId = product.id;
-            productInventory.shopId = product.shopId;
-        } else {
-            logger.error("Product Id is not valid");
-            res.status(500).send(ResponseFactory.getErrorResponse({message: "Internal Server Error!"}));
-            txn.rollback();
-            return;
-        }
+        const txn = await EntityManager.getTransaction();
 
-        const productInventoryResponse = await txn.persist(ProductInventory, productInventory);
+        product = await txn.persist(Product, product);
 
-        if (DbResponses.isSqlErrorResponse(productInventoryResponse.status)) {
-            logger.error(productResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productInventoryResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
+        productInventory.productId = product.id;
+        productInventory.shopId = product.shopId;
 
-        const queryResponse = await txn.commit();
+        productInventory = await txn.persist(ProductInventory, productInventory);
 
-        if (DbResponses.isRollback(queryResponse.status)) {
-            logger.error(queryResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
+        await txn.commit();
 
         logger.info("Product Created. Id: " + product.id);
         res.send(ResponseFactory.getSuccessResponse({
@@ -87,6 +60,43 @@ exports.create = async (req, res) => {
 
 };
 
+exports.updateStatus = async (req, res) => {
+
+    try {
+        // Validate the Request
+        if (!commonFunctions.validateRequestBody(req.body, ApiRequest.STATUS_UPDATE_API, false, res))
+            return;
+
+        let product = await EntityManager.findOne(Product, req.body.primaryId);
+
+        if (!product) {
+            res.status(400).send(ResponseFactory.getErrorResponse({message: "Shop not exist with id: " + req.body.id}));
+            return;
+        }
+        if (!commonFunctions.isValidToProcess(req, res, product.shopId))
+            return;
+
+        product.status = req.body.status;
+
+        const updateResponse = await EntityManager.updateOne(Product, product);
+
+        if (!updateResponse) {
+            logger.error("Product updating failed with id : " + req.body.id);
+            res.status(400).send(ResponseFactory.getErrorResponse({message: "Product updating failed with id : " + req.body.id}));
+            return;
+        }
+
+        logger.info('Product Status Updated: Id: ' + req.body.primaryId);
+        res.send(ResponseFactory.getSuccessResponse({
+            id: req.body.primaryId,
+            message: "Successfully Updated the Product status!"
+        }));
+    } catch (e) {
+        logger.error(e || null);
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
+    }
+};
+
 exports.update = async (req, res) =>{
     try{
         // Validate the Request and reformat to api format
@@ -96,31 +106,19 @@ exports.update = async (req, res) =>{
         if(!commonFunctions.isValidToProcess(req,res,req.body.shopId))
             return;
 
-        const productResponse = await dbOperations.findOne(Product,req.body.id);
+        let product = await EntityManager.findOne(Product,req.body.id);
 
-        if(DbResponses.isSqlErrorResponse(productResponse.status)){
-            logger.error(productResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
-        if (DbResponses.isDataNotFoundResponse(productResponse.status)) {
+        if (!product) {
             res.status(400).send(ResponseFactory.getErrorResponse({message: "Product not exist with id: " + req.body.id}));
             return;
         }
-        let product = productResponse.data;
 
-        const productInventoryResponse = await dbOperations.findOne(ProductInventory,req.body.id);
+        let productInventory = await EntityManager.findOne(ProductInventory,req.body.id);
 
-        if(DbResponses.isSqlErrorResponse(productInventoryResponse.status)){
-            logger.error(productInventoryResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productInventoryResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
-        if (DbResponses.isDataNotFoundResponse(productInventoryResponse.status)) {
+        if (!productInventory) {
             res.status(400).send(ResponseFactory.getErrorResponse({message: "Product Inventory not exist with id: " + req.body.id}));
             return;
         }
-        let productInventory = productInventoryResponse.data;
 
         product.name = req.body.name;
         product.description = req.body.description;
@@ -129,30 +127,13 @@ exports.update = async (req, res) =>{
 
         productInventory.price = req.body.price;
 
-        const txn = dbTransaction.getTransaction();
-        const productUpdateResponse = await txn.merge(Product, product);
+        const txn = EntityManager.getTransaction();
 
-        if (DbResponses.isSqlErrorResponse(productUpdateResponse.status)) {
-            logger.error(productUpdateResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productUpdateResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
+        await txn.merge(Product, product);
 
-        const productInventoryUpdateResponse = await txn.merge(ProductInventory, productInventory);
+        await txn.merge(ProductInventory, productInventory);
 
-        if (DbResponses.isSqlErrorResponse(productInventoryUpdateResponse.status)) {
-            logger.error(productUpdateResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: productInventoryUpdateResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
-
-        const queryResponse = await txn.commit();
-
-        if (DbResponses.isRollback(queryResponse.status)) {
-            logger.error(queryResponse.data.sqlMessage || "Internal Server Error!")
-            res.status(500).send(ResponseFactory.getErrorResponse({message: queryResponse.data.sqlMessage || "Internal Server Error!"}));
-            return;
-        }
+        await txn.commit();
 
         logger.info('Product Updated: Id: ' + req.body.id);
         res.send(ResponseFactory.getSuccessResponse({id: req.body.id, message: "Successfully Updated!"}));
@@ -186,7 +167,7 @@ exports.findByCriteria = (req, res) => {
         };
 
         let searchReq = new SearchRequest(req.body);
-        searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, null, searchReq, res);
+        searchTemplate.dynamicSearchWithCount(SELECT_SQL, COUNT_SQL, FILTER, COLUMN_MAP, MAPPER, searchReq, res);
     } catch (e) {
         logger.error(e);
         res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));

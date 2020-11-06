@@ -1,6 +1,6 @@
 // const ConnectionPoolClass = require("../database/db.connection.pool.singleton");
 const EntityManager = require("../../../shared/database/mysql/api/entity.manager");
-const ResponseFactory = require("../API/response/dynamic.response.factory");
+const ResponseFactory = require("../api/response/dynamic.response.factory");
 
 function dataOnlySearch(SELECT_SQL, FILTER, COLUMN_MAP, searchRequest, result) {
     SELECT_SQL = SELECT_SQL + generateWhere(searchRequest, COLUMN_MAP) + FILTER + generateLimit(searchRequest);

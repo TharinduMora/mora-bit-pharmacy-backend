@@ -8,11 +8,11 @@ exports.insertOne = function (entity, entityObject) {
         const insertQueryObj = queryGenerator.getInsertOneQuery(entity, entityObject);
         poolConnection.query(insertQueryObj.query, insertQueryObj.value, (err, res) => {
             if (err) {
-                resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.SQL_ERROR, data: err || null }));
+                resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.SQL_ERROR, data: err || null}));
                 return;
             }
-            entityObject.id = res.insertId;
-            resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.SUCCESS, data: entityObject }))
+            entityObject[entity['PrimaryKey']] = res.insertId;
+            resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.SUCCESS, data: entityObject}))
         });
     })
 };
@@ -25,18 +25,17 @@ exports.updateOne = function (entity, updatingObject) {
         poolConnection.query(
             queryValue.query, queryValue.value, (err, res) => {
                 if (err) {
-                    resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.SQL_ERROR, data: err || null }));
+                    resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.SQL_ERROR, data: err || null}));
                     return;
                 }
-                if (res.affectedRows == 0) {
-                    // resolve(DBResponseFactory.DataNotFound());
-                    resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null }));
+                if (res.affectedRows === 0) {
+                    resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null}));
                     return;
                 }
                 // resolve(DBResponseFactory.Success({id: updatingObject[entity['EntityName']]}));
                 resolve(mysqlConfig.mysqlOutput({
                     status: mysqlConfig.STATUS.SUCCESS,
-                    data: { id: updatingObject[entity['PrimaryKey']] }
+                    data: {id: updatingObject[entity['PrimaryKey']]}
                 }));
             }
         );
@@ -48,7 +47,7 @@ exports.findOne = function (entity, primaryId) {
         const sqlQuery = queryGenerator.getFindOneQuery(entity, primaryId);
         poolConnection.query(sqlQuery, (err, res) => {
             if (err) {
-                resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.SQL_ERROR, data: err || null }));
+                resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.SQL_ERROR, data: err || null}));
                 return;
             }
             if (res.length) {
@@ -59,7 +58,7 @@ exports.findOne = function (entity, primaryId) {
                 }));
                 return;
             }
-            resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null }));
+            resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null}));
         });
     })
 };
@@ -68,7 +67,7 @@ exports.getResultByQuery = function (SELECT_SQL) {
     return new Promise((resolve, reject) => {
         poolConnection.query(SELECT_SQL, (err, res) => {
             if (err) {
-                resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.SQL_ERROR, data: err || null }));
+                resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.SQL_ERROR, data: err || null}));
                 return;
             }
             if (res.length > 0) {
@@ -79,7 +78,7 @@ exports.getResultByQuery = function (SELECT_SQL) {
                 }));
                 return;
             }
-            resolve(mysqlConfig.mysqlOutput({ status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null }));
+            resolve(mysqlConfig.mysqlOutput({status: mysqlConfig.STATUS.NOT_FOUND_ERR, data: null}));
             // resolve(DBResponseFactory.DataNotFound())
         });
     });

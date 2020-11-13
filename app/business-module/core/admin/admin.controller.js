@@ -36,6 +36,7 @@ exports.create = async (req, res) => {
             address: req.body.address,
             city: req.body.city
         });
+        admin.createdDate = new Date();
         admin.shopId = req.body.shopId;
         if (req.body.shopId > 1) {
             admin.systemAdmin = false;

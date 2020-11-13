@@ -11,6 +11,7 @@ CREATE TABLE shop
     city        varchar(255) DEFAULT NULL,
     longitude   float(10,8)  NOT NULL,
     latitude    float(10,8)  NOT NULL,
+    createdDate datetime NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -36,6 +37,7 @@ CREATE TABLE admin
     address     varchar(255) DEFAULT NULL,
     city        varchar(255) DEFAULT NULL,
     sessionId   varchar(100) DEFAULT NULL,
+    createdDate datetime NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (shopId) REFERENCES shop (id)
 );
@@ -55,6 +57,7 @@ CREATE TABLE product
     name           varchar(255) NOT NULL,
     description    varchar(255) DEFAULT NULL,
     image          varchar(255) DEFAULT NULL,
+    createdDate datetime NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (shopId) REFERENCES shop (id)
 );

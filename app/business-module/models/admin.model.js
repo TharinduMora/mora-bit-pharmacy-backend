@@ -12,7 +12,8 @@ const Admin = function (admin) {
     this.city = admin.city || null;
     this.sessionId = admin.sessionId || null;
     this.status = admin.status || 0;
-    this.systemAdmin = admin.systemAdmin || false
+    this.systemAdmin = admin.systemAdmin || false;
+    this.createdDate = admin.createdDate || null;
 };
 
 Admin.EntityName = "admin";

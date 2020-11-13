@@ -32,6 +32,7 @@ exports.create = async (req, res) => {
         });
         product.shopId = req.body.shopId;
         product.status = mainConfig.SYSTEM_STATUS.PENDING;
+        product.createdDate = new Date();
 
         let productInventory = new ProductInventory({
             price: req.body.price

@@ -34,6 +34,7 @@ exports.create = async (req, res) => {
         }
 
         let shop = new Shop(req.body);
+        shop.createdDate = new Date();
         shop.status = mainConfig.SYSTEM_STATUS.PENDING;
 
         let admin = new Admin(req.body);
@@ -47,6 +48,7 @@ exports.create = async (req, res) => {
         shop = await txn.persist(Shop, shop);
 
         admin.shopId = shop.id;
+        admin.createdDate = new Date();
 
         await txn.persist(Admin, admin);
         await txn.commit();

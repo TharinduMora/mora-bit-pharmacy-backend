@@ -11,6 +11,7 @@ const Shop = function (shop) {
     this.city = shop.city || null;
     this.longitude = shop.longitude || 0.0;
     this.latitude = shop.latitude || 0.0;
+    this.createdDate = shop.createdDate || null;
 };
 
 Shop.EntityName = "shop";

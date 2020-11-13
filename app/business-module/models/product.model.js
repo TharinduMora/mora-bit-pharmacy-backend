@@ -7,6 +7,7 @@ const Product = function (product) {
     this.name = product.name || null;
     this.description = product.description || null;
     this.image = product.image || null;
+    this.createdDate = product.createdDate || null;
 };
 
 Product.EntityName = "product";

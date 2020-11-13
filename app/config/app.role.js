@@ -7,6 +7,7 @@ exports.APP_ROLES = [
         NAME: "Super Admin",
         TYPE: MainConfig.ADMIN_TYPES.SYSTEM_ADMIN,
         FUNCTIONS: [
+            AppFunctions.DEFAULT.ID,
             // Admin Functions
             AppFunctions.FIND_ADMIN_BY_CRITERIA.ID,
             AppFunctions.VIEW_ADMIN_DETAILS.ID,
@@ -26,6 +27,7 @@ exports.APP_ROLES = [
         NAME: "Shop Admin",
         TYPE: MainConfig.ADMIN_TYPES.SHOP_ADMIN,
         FUNCTIONS: [
+            AppFunctions.DEFAULT.ID,
             AppFunctions.VIEW_SHOP_DETAILS.ID,
             AppFunctions.UPDATE_SHOP.ID,
             AppFunctions.CREATE_PRODUCT.ID,

@@ -155,13 +155,18 @@ exports.login = async (req, res) => {
 };
 
 exports.findOne = async (req, res) => {
-    const admin = EntityManager.findOne(Admin, req.params.adminId);
+    try {
+        const admin = EntityManager.findOne(Admin, req.params.adminId);
 
-    if (admin === null) {
-        res.status(204).send();
-        return;
+        if (admin === null) {
+            res.status(204).send();
+            return;
+        }
+        res.send(ResponseFactory.getSuccessResponse({data: AdminApiResponse.AdminLoginResponse(admin)}));
+    } catch (e) {
+        logger.error(e);
+        res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
     }
-    res.send(ResponseFactory.getSuccessResponse({data: admin}));
 };
 
 exports.findAll = (req, res) => {

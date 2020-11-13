@@ -1,5 +1,6 @@
 exports.APP_FUNCTIONS = {
 
+    DEFAULT: {ID: 0, NAME: 'Default Function', DESCRIPTION: 'Not validate this.'},
     FIND_ADMIN_BY_CRITERIA: {ID: 1, NAME: 'Admin -> Find By Criteria', DESCRIPTION: 'Admin -> Find By Criteria'},
     VIEW_ADMIN_DETAILS: {ID: 2, NAME: 'Admin -> View Details', DESCRIPTION: 'Admin -> View Details'},
     CREATE_ADMIN: {ID: 3, NAME: 'Admin -> Create', DESCRIPTION: 'Admin -> Create'},

@@ -1,6 +1,7 @@
 const payloadChecker = require('payload-validator');
 const sessionStore = require("./session.store")
 const {APP_ROLES} = require("../../config/app.role");
+const {APP_FUNCTIONS} = require("../../config/app.functions");
 const Admin = require("../models/admin.model");
 const ResponseFactory = require("./api/response/dynamic.response.factory");
 
@@ -69,7 +70,12 @@ exports.authValidator = (functionId) => {
 
         function validateUser(req, res, next) {
 
-            try{
+            if (functionId === APP_FUNCTIONS.DEFAULT.ID) {
+                next();
+                return;
+            }
+
+            try {
                 let roles = APP_ROLES.filter((r) => {
                     return r.ID === req.admin.roleId
                 });
@@ -84,7 +90,7 @@ exports.authValidator = (functionId) => {
                 } else {
                     res.status(401).send(ResponseFactory.getErrorResponse({message: 'Unauthorized User'}));
                 }
-            }catch(error) {
+            } catch (error) {
                 logger.error(error);
                 res.status(500).send(ResponseFactory.getErrorResponse({message: 'Internal Server Error'}));
             }

@@ -29,6 +29,6 @@ Admin.NamedQuery = {
         return `SELECT * FROM  ${Admin.EntityName} WHERE userName = '${userName}' AND password = '${password}'`
     }
 };
-Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "password", "systemAdmin"];
+Admin.updateRestrictedColumns = ["id", "roleId", "shopId", "userName", "systemAdmin"];
 
 module.exports = Admin;

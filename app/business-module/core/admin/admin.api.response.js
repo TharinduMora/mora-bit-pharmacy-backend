@@ -1,6 +1,7 @@
 class AdminApiResponse {
 
     AdminLoginResponse(admin) {
+        this.id = admin.id;
         this.userName = admin.userName;
         this.fullName = admin.fullName;
         this.email = admin.email;

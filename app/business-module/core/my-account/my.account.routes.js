@@ -12,4 +12,6 @@ router.get('/shop/:shopId', commonFunctions.authValidator(appFunctions.DEFAULT.I
 
 router.put('/shop', commonFunctions.authValidator(appFunctions.DEFAULT.ID), myAccountCtl.shopUpdate);
 
+router.put('/change-password', commonFunctions.authValidator(appFunctions.DEFAULT.ID), myAccountCtl.changePassword);
+
 module.exports = router;

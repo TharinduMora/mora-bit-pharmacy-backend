@@ -25,7 +25,15 @@ MyAccountApiRequest = {
             latitude: 0.0
         },
         MandatoryColumns: ["id"]
+    },
+    CHANGE_PASSWORD_API: {
+        BODY: {
+            id: 0,
+            currentPassword: "",
+            newPassword: ""
+        },
+        MandatoryColumns: ["id"]
     }
 };
 
-module.exports = AdminApiRequest;
+module.exports = MyAccountApiRequest;

@@ -37,6 +37,7 @@ exports.adminUpdate = async (req, res) => {
 
         if (req.admin.id !== req.body.id) {
             res.status(401).send(ResponseFactory.getErrorResponse({message: 'Invalidate User to current action.'}));
+            return;
         }
 
         let admin = await EntityManager.findOne(Admin, req.body.id);

@@ -35,7 +35,7 @@ const logger = function (fileName) {
             new transports.Console({
                 level: "verbose",
                 format: format.combine(
-                    format.colorize()
+                    format.colorize({ all: true })
                 )
             }),
             transport("app-error", 'error'),

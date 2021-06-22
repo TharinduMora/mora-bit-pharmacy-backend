@@ -16,4 +16,6 @@ router.put('/updateStatus', commonFunctions.authValidator(appFunctions.UPDATE_SH
 
 router.post('/findByCriteria', commonFunctions.authValidator(appFunctions.FIND_SHOP_BY_CRITERIA.ID), shops.findByCriteria);
 
+router.post('/client/findByMap/:latitude/:longitude/:radius', shops.findByMap);
+
 module.exports = router;

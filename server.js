@@ -56,6 +56,7 @@ app.use("/shop", require("./app/business-module/core/shop/shop.routes.js"));
 app.use("/admin", require("./app/business-module/core/admin/admin.routes.js"));
 app.use("/product", require("./app/business-module/core/product/product.routes"));
 app.use("/my-account", require("./app/business-module/core/my-account/my.account.routes"));
+app.use("/client", require("./app/business-module/core/client/client.routes"));
 
 app.listen(appConfig.SERVER.PORT, () => {
     logger.info(`${appConfig.APP_NAME} started on port ${appConfig.SERVER.PORT}`);

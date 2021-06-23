@@ -236,6 +236,25 @@ exports.findOne = async (req, res) => {
   }
 };
 
+exports.clientFindOne = async (req, res) => {
+  try {
+    const shop = await EntityManager.findOne(Shop, req.params.shopId);
+
+    if (!shop) {
+      res.status(204).send();
+      return;
+    }
+    res.send(ResponseFactory.getSuccessResponse({ data: shop }));
+  } catch (e) {
+    logger.error(e || null);
+    res
+      .status(500)
+      .send(
+        ResponseFactory.getErrorResponse({ message: "Internal Server Error" })
+      );
+  }
+};
+
 exports.findAll = (req, res) => {
   try {
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
@@ -308,9 +327,10 @@ exports.findByMap = (req, res) => {
     let longitude = req.params.longitude;
     let radius = req.params.radius;
 
-    let productNameCondition = '';
+    let productNameCondition = "";
 
     if (req.query.productName) {
+      // AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}
       productNameCondition = `AND (SELECT count(id) AS ct from ${Product.EntityName} where shopId=${Shop.EntityName}.id AND name LIKE "%${req.query.productName}%") > 0`;
     }
 

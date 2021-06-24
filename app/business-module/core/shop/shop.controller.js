@@ -331,7 +331,7 @@ exports.findByMap = (req, res) => {
 
     if (req.query.productName) {
       // AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}
-      productNameCondition = `AND (SELECT count(id) AS ct from ${Product.EntityName} where shopId=${Shop.EntityName}.id AND name LIKE "%${req.query.productName}%") > 0`;
+      productNameCondition = `AND (SELECT count(id) AS ct from ${Product.EntityName} where shopId=${Shop.EntityName}.id  AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}  AND name LIKE "%${req.query.productName}%") > 0`;
     }
 
     let SELECT_SQL = `SELECT id ,name ,email ,telephone ,city ,latitude ,longitude ,status, 

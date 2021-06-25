@@ -9,7 +9,7 @@ exports.APP_ROLES = [
         FUNCTIONS: [
             AppFunctions.DEFAULT.ID,
             // Admin Functions
-            AppFunctions.FIND_ADMIN_BY_CRITERIA.ID,
+            // AppFunctions.FIND_ADMIN_BY_CRITERIA.ID,
             AppFunctions.VIEW_ADMIN_DETAILS.ID,
             AppFunctions.CREATE_ADMIN.ID,
             // AppFunctions.UPDATE_ADMIN.ID,

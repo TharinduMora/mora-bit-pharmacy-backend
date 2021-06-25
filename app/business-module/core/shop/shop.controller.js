@@ -334,7 +334,7 @@ exports.findByMap = (req, res) => {
       productNameCondition = `AND (SELECT count(id) AS ct from ${Product.EntityName} where shopId=${Shop.EntityName}.id  AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}  AND name LIKE "%${req.query.productName}%") > 0`;
     }
 
-    let SELECT_SQL = `SELECT id ,name ,email ,telephone ,city ,latitude ,longitude ,status, 
+    let SELECT_SQL = `SELECT id ,name ,email ,telephone ,city ,latitude ,longitude ,status,image,
     ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin(radians(latitude)) ) ) AS distance 
     FROM ${Shop.EntityName}`;
     let FILTER = `HAVING distance < ${radius} AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}  ${productNameCondition}`;
@@ -356,6 +356,7 @@ exports.findByMap = (req, res) => {
       latitude: "latitude",
       longitude: "longitude",
       distance: "distance",
+      image: "image",
     };
 
     searchTemplate.dynamicDataOnlySearch(

@@ -287,7 +287,7 @@ exports.findByCriteria = (req, res) => {
 
     let SELECT_SQL = `SELECT * FROM ${Shop.EntityName} `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Shop.EntityName} `;
-    let FILTER = "";
+    let FILTER = " AND id != 1 ";
     let COLUMN_MAP = {
       name: "name",
       email: "email",
@@ -337,7 +337,7 @@ exports.findByMap = (req, res) => {
     let SELECT_SQL = `SELECT id ,name ,email ,telephone ,city ,latitude ,longitude ,status,image,
     ( 6371 * acos( cos( radians(${latitude}) ) * cos( radians( latitude ) ) * cos( radians( longitude ) - radians(${longitude}) ) + sin( radians(${latitude}) ) * sin(radians(latitude)) ) ) AS distance 
     FROM ${Shop.EntityName}`;
-    let FILTER = `HAVING distance < ${radius} AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}  ${productNameCondition}`;
+    let FILTER = `HAVING distance < ${radius} AND status = ${mainConfig.SYSTEM_STATUS.APPROVED}  ${productNameCondition} AND id != 1 `;
     let COLUMN_MAP = {
       name: "name",
       email: "email",

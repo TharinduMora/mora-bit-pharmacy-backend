@@ -4,11 +4,13 @@ ProductApiRequest = {
             shopId: 0,
             stockAvailable: false,
             name: "",
+            unit:"",
             description: "",
             image: "",
-            price:0
+            price:0,
+            availableQuantity:0
         },
-        MandatoryColumns: ["shopId", "name"]
+        MandatoryColumns: ["shopId", "name","unit"]
     },
     UPDATE_API: {
         BODY: {
@@ -16,9 +18,11 @@ ProductApiRequest = {
             shopId: 0,
             stockAvailable: 0,
             name: "",
+            unit:"",
             description: "",
             image: "",
-            price:0
+            price:0,
+            availableQuantity:0
         },
         MandatoryColumns: ["id"]
     },

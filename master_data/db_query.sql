@@ -55,6 +55,7 @@ CREATE TABLE product
     status         int          DEFAULT 0,
     stockAvailable tinyint(1)   DEFAULT 0,
     name           varchar(255) NOT NULL,
+    unit           varchar(45) NOT NULL,
     description    varchar(255) DEFAULT NULL,
     image          varchar(255) DEFAULT NULL,
     createdDate datetime NOT NULL,

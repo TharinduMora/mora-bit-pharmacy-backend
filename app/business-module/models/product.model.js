@@ -5,6 +5,7 @@ const Product = function (product) {
     this.status = product.status || 0;
     this.stockAvailable = product.stockAvailable || 0;
     this.name = product.name || null;
+    this.unit = product.unit || null;
     this.description = product.description || null;
     this.image = product.image || null;
     this.createdDate = product.createdDate || null;

@@ -5,6 +5,7 @@ class ProductApiResponse {
     this.status = data.status || 0;
     this.stockAvailable = data.stockAvailable || null;
     this.name = data.name || null;
+    this.unit = data.unit || null;
     this.description = data.description || null;
     this.image = data.image || null;
     this.price = data.price || 0;

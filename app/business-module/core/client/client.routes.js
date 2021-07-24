@@ -9,4 +9,6 @@ router.post("/findByMap/:latitude/:longitude/:radius", shops.findByMap);
 
 router.post("/product/findByCriteria", product.findByCriteriaClient);
 
+router.get("/product/:medId", product.findOne);
+
 module.exports = router;

@@ -3,6 +3,7 @@ const ProductCreationResponse =
 
 const Product = require("../../models/product.model");
 const ProductInventory = require("../../models/product.inventory.model");
+const Shop = require("../../models/shop.model");
 const mainConfig = require("../../../config/main.config");
 const ProductApiRequest = require("./product.api.request");
 const ProductApiResponse = require("./product.api.response");
@@ -17,6 +18,53 @@ const EntityManager = require("../../../shared/database/mysql/api/entity.manager
 const logger = require("../../../shared/logger/logger.module")(
   "product.controller.js"
 );
+
+exports.findOne = async (req, res) => {
+  try {
+    const product = await EntityManager.findOne(Product, req.params.medId);
+
+    if (product === null) {
+      res.status(204).send();
+      return;
+    }
+    const productInventory = await EntityManager.findOne(
+      ProductInventory,
+      req.params.medId
+    );
+
+    if (productInventory === null) {
+      res.status(204).send();
+      return;
+    }
+
+    const shop = await EntityManager.findOne(Shop, product.shopId);
+
+    if (shop === null) {
+      res.status(304).send(ResponseFactory.getErrorResponse({ message: "Invalid Shop!" }));
+      return;
+    }
+
+    resp = {
+      ...product,
+      price: productInventory.price,
+      availableQuantity: productInventory.availableQuantity,
+      shopName: shop.name,
+    };
+
+    res.send(
+      ResponseFactory.getSuccessResponse({
+        data: resp,
+      })
+    );
+  } catch (e) {
+    logger.error(e);
+    res
+      .status(500)
+      .send(
+        ResponseFactory.getErrorResponse({ message: "Internal Server Error" })
+      );
+  }
+};
 
 exports.create = async (req, res) => {
   try {
@@ -36,6 +84,7 @@ exports.create = async (req, res) => {
     let product = new Product({
       stockAvailable: req.body.stockAvailable,
       name: req.body.name,
+      unit: req.body.unit,
       description: req.body.description,
       image: req.body.image,
     });
@@ -45,6 +94,7 @@ exports.create = async (req, res) => {
 
     let productInventory = new ProductInventory({
       price: req.body.price,
+      availableQuantity: req.body.availableQuantity,
     });
 
     const txn = await EntityManager.getTransaction();
@@ -64,9 +114,9 @@ exports.create = async (req, res) => {
       ResponseFactory.getSuccessResponse({
         data: ProductApiResponse.ProductCreationResponse({
           ...product,
-          price:productInventory.price
+          price: productInventory.price,
         }),
-          // price: productInventory.price,
+        // price: productInventory.price,
         message: "Product Created",
       })
     );
@@ -178,11 +228,13 @@ exports.update = async (req, res) => {
     }
 
     product.name = req.body.name;
+    product.unit = req.body.unit;
     product.description = req.body.description;
     product.image = req.body.image;
     product.stockAvailable = req.body.stockAvailable;
 
     productInventory.price = req.body.price;
+    productInventory.availableQuantity = req.body.availableQuantity;
 
     const txn = EntityManager.getTransaction();
 
@@ -213,9 +265,14 @@ exports.findByCriteria = (req, res) => {
   try {
     if (!commonFunctions.isValidToProcess(req, res, req.body.shopId)) return;
 
-    let SELECT_SQL = `SELECT A.* , B.price FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
+    let SELECT_SQL = `SELECT A.* , B.price ,B.availableQuantity FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
-    let FILTER = " AND A.shopId = " + req.body.shopId;
+    let FILTER =
+      " AND A.shopId = " +
+      req.body.shopId +
+      " AND A.Status NOT IN (" +
+      mainConfig.SYSTEM_STATUS.DELETED +
+      " ) ";
     let COLUMN_MAP = {
       name: "A.name",
     };
@@ -225,9 +282,11 @@ exports.findByCriteria = (req, res) => {
       status: "status",
       stockAvailable: "stockAvailable",
       name: "name",
+      unit: "unit",
       description: "description",
       image: "image",
       price: "price",
+      availableQuantity: "availableQuantity",
     };
 
     let searchReq = new SearchRequest(req.body);
@@ -252,7 +311,7 @@ exports.findByCriteria = (req, res) => {
 
 exports.findByCriteriaClient = (req, res) => {
   try {
-    let SELECT_SQL = `SELECT A.* , B.price FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
+    let SELECT_SQL = `SELECT A.* , B.price ,B.availableQuantity FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
     let COUNT_SQL = `SELECT COUNT(id) AS ct FROM ${Product.EntityName} A JOIN ${ProductInventory.EntityName} B ON A.id = B.productId `;
     let FILTER =
       " AND A.shopId = " +
@@ -268,9 +327,11 @@ exports.findByCriteriaClient = (req, res) => {
       status: "status",
       stockAvailable: "stockAvailable",
       name: "name",
+      unit: "unit",
       description: "description",
       image: "image",
       price: "price",
+      availableQuantity: "availableQuantity",
     };
 
     let searchReq = new SearchRequest(req.body);

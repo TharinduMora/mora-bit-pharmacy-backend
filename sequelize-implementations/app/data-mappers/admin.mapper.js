@@ -1,3 +1,0 @@
-function adminDTO(admin) {
-  return {};
-}

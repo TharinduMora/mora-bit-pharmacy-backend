@@ -19,7 +19,7 @@ INSERT INTO shop
 VALUES (0, 2, 'supershop@smartpharmacy.lk',
         'Super Shop', 'This is the shop for system users', null,
         null, null, null,
-        0.0, 0.0);
+        0.0, 0.0,'2020-01-01 00:00:00');
 
 CREATE TABLE admin
 (
@@ -46,7 +46,7 @@ INSERT INTO admin
 VALUES (0, 1, 1, 2, 1,
         'superAdmin', '123456', 'System Admin',
         null, 'superAdmin@smartpharmacy.lk',
-        null, null, null, null);
+        null, null, null, null,'2020-01-01 00:00:00');
 
 CREATE TABLE product
 (

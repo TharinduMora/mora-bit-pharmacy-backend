@@ -75,3 +75,16 @@ CREATE TABLE product_inventory
     FOREIGN KEY (productId) REFERENCES product (id)
 );
 
+CREATE TABLE `customer` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `userName` varchar(255) NOT NULL,
+  `password` varchar(255) NOT NULL,
+  `telephone` varchar(45) DEFAULT NULL,
+  `address` varchar(255) DEFAULT NULL,
+  `image` varchar(255) DEFAULT NULL,
+  `createdDate` datetime NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `userName_UNIQUE` (`userName`)
+)

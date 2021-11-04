@@ -84,6 +84,7 @@ CREATE TABLE `customer` (
   `telephone` varchar(45) DEFAULT NULL,
   `address` varchar(255) DEFAULT NULL,
   `image` varchar(255) DEFAULT NULL,
+  `sessionId` varchar(100) DEFAULT NULL,
   `createdDate` datetime NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `userName_UNIQUE` (`userName`)
